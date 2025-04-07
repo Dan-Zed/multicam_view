@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug AJAX Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .card {
+            border: 1px solid #eee;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .buttons {
+            margin: 20px 0;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug AJAX Test</h1>
+    <p>This page tests AJAX functionality to help diagnose capture issues.</p>
+    
+    <div class="buttons">
+        <button id="btnTestCapture">Test Single Capture</button>
+        <button id="btnCapture">Capture Images</button>
+        <button id="btnTestPipeline">Test Capture Pipeline</button>
+        <button id="btnListCaptures">List Captures</button>
+        <button id="btnLatestCapture">Get Latest Capture</button>
+    </div>
+    
+    <div id="status" class="status" style="display: none;"></div>
+    
+    <div class="card">
+        <h2>Response</h2>
+        <pre id="responseOutput">No responses yet.</pre>
+    </div>
+    
+    <div id="imagePreview" class="card" style="display: none;">
+        <h2>Image Preview</h2>
+        <img id="previewImage" style="max-width: 100%; max-height: 500px;" />
+    </div>
+    
+    <script>
+        // Helper function to display status messages
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = isError ? 'status error' : 'status success';
+            statusEl.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Helper function to display API response
+        function displayResponse(data) {
+            const outputEl = document.getElementById('responseOutput');
+            outputEl.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        // Helper function to make API requests
+        async function makeRequest(url) {
+            showStatus(`Making request to ${url}...`);
+            try {
+                console.log(`Fetching ${url}...`);
+                const startTime = Date.now();
+                const response = await fetch(url);
+                const endTime = Date.now();
+                console.log(`Response received in ${endTime - startTime}ms`);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                displayResponse(data);
+                
+                if (data.success) {
+                    showStatus('Request completed successfully');
+                    return data;
+                } else {
+                    showStatus(`Error: ${data.error}`, true);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error making request:', error);
+                showStatus(`Error: ${error.message}`, true);
+                return null;
+            }
+        }
+        
+        // Test single capture
+        document.getElementById('btnTestCapture').addEventListener('click', async () => {
+            console.log('Testing single capture...');
+            const data = await makeRequest('/debug/test_capture');
+            
+            if (data && data.success) {
+                const imageEl = document.getElementById('previewImage');
+                imageEl.src = `/captures/${data.file.filename}?t=${Date.now()}`; // Add timestamp to prevent caching
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+        });
+        
+        // Capture all images
+        document.getElementById('btnCapture').addEventListener('click', async () => {
+            console.log('Capturing images from all cameras...');
+            const data = await makeRequest('/capture');
+            
+            if (data && data.success) {
+                const imageEl = document.getElementById('previewImage');
+                imageEl.src = `/captures/${data.grid_filename}?t=${Date.now()}`; // Add timestamp to prevent caching
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+        });
+        
+        // Test capture pipeline
+        document.getElementById('btnTestPipeline').addEventListener('click', async () => {
+            console.log('Testing capture pipeline...');
+            const data = await makeRequest('/debug/test_capture_pipeline');
+            
+            if (data && data.success) {
+                const imageEl = document.getElementById('previewImage');
+                imageEl.src = `/captures/${data.grid_file.filename}?t=${Date.now()}`; // Add timestamp to prevent caching
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+        });
+        
+        // List captures
+        document.getElementById('btnListCaptures').addEventListener('click', async () => {
+            console.log('Listing captures...');
+            await makeRequest('/debug/captures');
+        });
+        
+        // Get latest capture
+        document.getElementById('btnLatestCapture').addEventListener('click', async () => {
+            console.log('Getting latest capture...');
+            const data = await makeRequest('/latest_capture');
+            
+            if (data && data.success) {
+                const imageEl = document.getElementById('previewImage');
+                imageEl.src = `/captures/${data.filename}?t=${Date.now()}`; // Add timestamp to prevent caching
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -3,6 +3,7 @@ import io
 import os
 import time
 import logging
+import traceback
 from PIL import Image, ImageDraw
 from camera_manager import CameraManager
 
@@ -359,6 +360,88 @@ def debug_test_capture():
             'success': False,
             'error': str(e)
         }), 500
+
+@app.route('/debug/test_capture_pipeline')
+def debug_test_capture_pipeline():
+    """Debug route to test the entire capture pipeline."""
+    if not camera_manager:
+        return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
+        
+    try:
+        # Step 1: Check capture directory
+        capture_dir = app.config['CAPTURE_FOLDER']
+        capture_dir_info = {
+            'path': capture_dir,
+            'exists': os.path.exists(capture_dir),
+            'is_dir': os.path.isdir(capture_dir) if os.path.exists(capture_dir) else False,
+            'permissions': oct(os.stat(capture_dir).st_mode)[-3:] if os.path.exists(capture_dir) else None,
+            'writable': os.access(capture_dir, os.W_OK) if os.path.exists(capture_dir) else False
+        }
+        
+        # Step 2: Test image capture from a single camera
+        logger.info("Test pipeline: capturing image from camera 0")
+        img = camera_manager.capture_image(0)
+        
+        # Step 3: Test saving image to disk
+        test_filename = f'test_pipeline_{int(time.time())}.jpg'
+        test_filepath = os.path.join(capture_dir, test_filename)
+        logger.info(f"Test pipeline: saving image to {test_filepath}")
+        
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
+            
+        img.save(test_filepath)
+        
+        # Step 4: Check that the file was saved successfully
+        file_info = {
+            'filename': test_filename,
+            'path': test_filepath,
+            'exists': os.path.exists(test_filepath),
+            'size': os.path.getsize(test_filepath) if os.path.exists(test_filepath) else 0,
+            'permissions': oct(os.stat(test_filepath).st_mode)[-3:] if os.path.exists(test_filepath) else None
+        }
+        
+        # Step 5: Test creating a grid image
+        logger.info("Test pipeline: capturing images from all cameras")
+        images = camera_manager.capture_all_cameras()
+        
+        logger.info("Test pipeline: creating grid image")
+        grid_img = camera_manager.create_grid_image(images)
+        
+        grid_filename = f'test_pipeline_grid_{int(time.time())}.jpg'
+        grid_filepath = os.path.join(capture_dir, grid_filename)
+        logger.info(f"Test pipeline: saving grid image to {grid_filepath}")
+        
+        grid_img.save(grid_filepath)
+        
+        grid_file_info = {
+            'filename': grid_filename,
+            'path': grid_filepath,
+            'exists': os.path.exists(grid_filepath),
+            'size': os.path.getsize(grid_filepath) if os.path.exists(grid_filepath) else 0,
+            'permissions': oct(os.stat(grid_filepath).st_mode)[-3:] if os.path.exists(grid_filepath) else None
+        }
+        
+        return jsonify({
+            'success': True,
+            'capture_directory': capture_dir_info,
+            'test_file': file_info,
+            'grid_file': grid_file_info
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in test capture pipeline: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': type(e).__name__,
+            'traceback': str(traceback.format_exc())
+        }), 500
+
+@app.route('/debug/javascript_ajax_test')
+def debug_javascript_ajax_test():
+    """Debug route to test JavaScript AJAX functionality."""
+    return render_template('debug_ajax.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
