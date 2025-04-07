@@ -85,22 +85,17 @@ class CameraManager:
                 logger.info(f"Detected IMX519 sensors")
             
             # Create base configurations with appropriate resolutions
-            # Preview at 720p resolution
+            # Preview at 720p resolution with autofocus enabled
             self.video_config = self.picam.create_video_configuration(
-                main={"size": (1280, 720)}  # 720p for better preview quality
+                main={"size": (1280, 720)},  # 720p for better preview quality
+                controls={"AfMode": controls.AfModeEnum.Continuous}  # Enable continuous autofocus
             )
             
-            # Enable autofocus for video mode
-            if not self.test_mode:
-                self.picam.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-            
-            # Capture at high resolution
+            # Capture at high resolution with autofocus
             self.still_config = self.picam.create_still_configuration(
-                main={"size": (4056, 3040)}  # Full resolution
+                main={"size": (4056, 3040)},  # Full resolution
+                controls={"AfMode": controls.AfModeEnum.Auto}  # Enable one-time autofocus for captures
             )
-            
-            # Use auto focus for still captures
-            # This will be applied when switching to still config
             
             # Start with video configuration
             self.picam.configure(self.video_config)
@@ -269,18 +264,14 @@ class CameraManager:
                     self._add_center_cross(test_img)
                     return test_img
                 
-                # Switch to still config for high-res capture
+                # Switch to still config for high-res capture (includes autofocus)
                 logger.info(f"Switching to still config for camera {camera_index if camera_index is not None else self.current_camera}")
                 self.picam.stop()
                 self.picam.configure(self.still_config)
                 self.picam.start()
                 
-                # Apply autofocus for still capture
-                if not self.test_mode:
-                    self.picam.set_controls({"AfMode": controls.AfModeEnum.Auto})
-                
-                # Wait for camera to stabilize
-                time.sleep(0.5)
+                # Wait for camera to stabilize and focus
+                time.sleep(1.0)  # Longer delay to ensure proper focusing
                 
                 # Capture to a PIL Image
                 logger.info("Capturing image")
@@ -290,15 +281,11 @@ class CameraManager:
                 # Add red cross in the center
                 self._add_center_cross(image)
                 
-                # Switch back to video config
+                # Switch back to video config (includes continuous autofocus)
                 logger.info("Switching back to video config")
                 self.picam.stop()
                 self.picam.configure(self.video_config)
                 self.picam.start()
-                
-                # Restore continuous autofocus for video mode
-                if not self.test_mode:
-                    self.picam.set_controls({"AfMode": controls.AfModeEnum.Continuous})
                 
                 # Ensure image is in RGB mode
                 if image.mode == 'RGBA':
@@ -354,18 +341,14 @@ class CameraManager:
             
             # Normal hardware mode - use a single lock for the entire operation
             with self.lock:
-                # First, switch to still config for high-res capture
+                # First, switch to still config for high-res capture (includes autofocus)
                 logger.info("Switching to still config for all cameras")
                 self.picam.stop()
                 self.picam.configure(self.still_config)
                 self.picam.start()
                 
-                # Apply autofocus for still capture
-                if not self.test_mode:
-                    self.picam.set_controls({"AfMode": controls.AfModeEnum.Auto})
-                
-                # Wait for camera to stabilize
-                time.sleep(0.5)
+                # Wait for camera to stabilize and focus
+                time.sleep(1.0)  # Longer delay to ensure proper focusing
                 
                 for i in range(self.camera_count):
                     logger.info(f"Capturing from camera {i}")
@@ -414,15 +397,11 @@ class CameraManager:
                     
                     images.append(image)
                 
-                # Switch back to video config
+                # Switch back to video config (includes continuous autofocus)
                 logger.info("Switching back to video config")
                 self.picam.stop()
                 self.picam.configure(self.video_config)
                 self.picam.start()
-                
-                # Restore continuous autofocus for video mode
-                if not self.test_mode:
-                    self.picam.set_controls({"AfMode": controls.AfModeEnum.Continuous})
             
             return images
         finally:
