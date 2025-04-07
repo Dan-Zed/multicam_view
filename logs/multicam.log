@@ -1,0 +1,56 @@
+2025-04-07 11:34:07,834 - multicam_app - INFO - Captures directory exists: captures
+2025-04-07 11:34:07,834 - camera_manager - INFO - Initialized I2C bus 11
+[0:23:15.758278726] [2126] [1;32m INFO [1;37mCamera [1;34mcamera_manager.cpp:327 [0mlibcamera v0.4.0+78-818d45eb-dirty (2025-02-14T02:03:07GMT)
+[0:23:15.765599467] [2133] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:720 [0mlibpisp version v1.1.0 e7974a156008 27-01-2025 (21:50:51)
+[0:23:15.773576490] [2133] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:1180 [0mRegistered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a to CFE device /dev/media2 and ISP device /dev/media0 using PiSP variant BCM2712_D0
+2025-04-07 11:34:07,851 - picamera2.picamera2 - INFO - Initialization successful.
+2025-04-07 11:34:07,851 - picamera2.picamera2 - INFO - Camera now open.
+2025-04-07 11:34:07,852 - camera_manager - INFO - Camera info: [{'Model': 'imx519', 'Location': 2, 'Rotation': 0, 'Id': '/base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a', 'Num': 0}]
+2025-04-07 11:34:07,852 - camera_manager - INFO - Detected IMX519 sensors
+2025-04-07 11:34:07,853 - picamera2.picamera2 - INFO - Camera configuration has been adjusted!
+[0:23:15.777035878] [2126] [1;32m INFO [1;37mCamera [1;34mcamera.cpp:1202 [0mconfiguring streams: (0) 640x480-XBGR8888 (1) 1280x720-RGGB_PISP_COMP1
+[0:23:15.777121656] [2133] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:1485 [0mSensor: /base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a - Selected sensor format: 1280x720-SRGGB10_1X10 - Selected CFE format: 1280x720-PC1R
+2025-04-07 11:34:07,854 - picamera2.picamera2 - INFO - Configuration successful!
+2025-04-07 11:34:08,029 - picamera2.picamera2 - INFO - Camera started
+2025-04-07 11:34:08,029 - camera_manager - INFO - Selected camera: all
+2025-04-07 11:34:08,129 - camera_manager - INFO - Started camera cycling with interval 2.0s
+2025-04-07 11:34:08,133 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:34:08,133 - multicam_runner - INFO - Starting multicam view application
+2025-04-07 11:34:08,133 - multicam_runner - INFO - Starting web server on 0.0.0.0:8000
+ * Serving Flask app 'cam'
+ * Debug mode: off
+2025-04-07 11:34:08,137 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://10.12.245.42:8000
+2025-04-07 11:34:08,137 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-04-07 11:34:09,626 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:09] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:10,233 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:34:11,682 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:11] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:12,334 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:34:13,675 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:13] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:14,435 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:34:15,716 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:15] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:16,535 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:34:17,823 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:17] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:18,636 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:34:19,954 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:19] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:20,737 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:34:22,071 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:22] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:22,837 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:34:24,204 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:24] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:24,938 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:34:26,355 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:26] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:27,039 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:34:28,482 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:28] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:29,139 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:34:30,641 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:30] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:31,240 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:34:32,732 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:32] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:33,341 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:34:34,881 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:34] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:35,441 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:34:37,018 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:37] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:37,542 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:34:39,188 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:39] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:39,643 - camera_manager - INFO - Selected camera: 0
