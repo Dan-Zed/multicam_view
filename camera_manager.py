@@ -71,9 +71,8 @@ class CameraManager:
         try:
             self.picam = Picamera2()
             camera_info = self.picam.global_camera_info()
-            is_v3 = "imx708" in str(camera_info).lower()
             logger.info(f"Camera info: {camera_info}")
-            logger.info(f"Detected {'Pi Camera V3' if is_v3 else 'IMX519 sensors'}")
+            logger.info(f"Detected IMX519 sensors")
             
             # Create base configurations with appropriate resolutions
             # Preview at low resolution
@@ -113,6 +112,12 @@ class CameraManager:
         """
         with self.lock:
             try:
+                # Special handling for camera 4 (index 3) which is broken
+                if camera_index == 3:
+                    logger.warning("Camera 4 (index 3) is broken, not switching to it")
+                    self.current_camera = camera_index  # Still update the state
+                    return True
+                    
                 if camera_index not in self.CAMERA_COMMANDS:
                     logger.error(f"Invalid camera index: {camera_index}")
                     return False
@@ -151,7 +156,10 @@ class CameraManager:
             while self.is_cycling:
                 self.select_camera(camera_idx)
                 time.sleep(self.cycle_interval)
+                # Skip to next camera, skipping index 3 which is broken
                 camera_idx = (camera_idx + 1) % self.camera_count
+                if camera_idx == 3:  # Skip the broken camera
+                    camera_idx = 0
         
         self.cycle_thread = threading.Thread(target=cycle_cameras)
         self.cycle_thread.daemon = True
@@ -242,9 +250,25 @@ class CameraManager:
         
         try:
             for i in range(self.camera_count):
-                logger.info(f"Capturing from camera {i}")
-                image = self.capture_image(i)
-                images.append(image)
+                if i == 3:  # Special handling for broken camera 4 (index 3)
+                    logger.warning(f"Skipping capture from broken camera 4 (index 3)")
+                    # Create a blank image with "Camera Disconnected" text
+                    blank_img = Image.new('RGB', (640, 480), color='black')
+                    draw = ImageDraw.Draw(blank_img)
+                    # Use center coordinates but no anchor (older PIL versions might not have it)
+                    text = "Camera Disconnected"
+                    # Get approximate text size (this is very rough)
+                    text_width = len(text) * 8
+                    text_height = 15
+                    text_x = (blank_img.width - text_width) // 2
+                    text_y = (blank_img.height - text_height) // 2
+                    draw.text((text_x, text_y), text, fill=(255, 0, 0))
+                    self._add_center_cross(blank_img)
+                    images.append(blank_img)
+                else:
+                    logger.info(f"Capturing from camera {i}")
+                    image = self.capture_image(i)
+                    images.append(image)
             
             return images
         finally:

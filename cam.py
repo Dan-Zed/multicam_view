@@ -71,7 +71,9 @@ def gen_frames():
             # Add center cross
             camera_manager._add_center_cross(img)
             
-            # Convert to JPEG bytes
+            # Convert to JPEG bytes (ensuring RGB mode)
+            if img.mode == 'RGBA':
+                img = img.convert('RGB')
             img_io = io.BytesIO()
             img.save(img_io, format='JPEG')
             img_io.seek(0)

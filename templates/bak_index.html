@@ -91,7 +91,7 @@
 
         .stream-container {
             width: 640px;
-            height: {{ '360px' if is_v3 else '480px' }};
+            height: 480px;
             overflow: hidden;
             border-radius: 4px;
             margin-bottom: 1rem;
@@ -167,7 +167,7 @@
             .stream-container {
                 width: 100%;
                 height: auto;
-                aspect-ratio: {{ '16/9' if is_v3 else '4/3' }};
+                aspect-ratio: 4/3;
             }
         }
 
@@ -194,7 +194,7 @@
     <div class="main-content">
         <div class="camera-info">
             <i class="fas fa-camera"></i>
-            Detected: {{ 'Pi Camera V3 (autofocus enabled)' if is_v3 else 'HQ Camera (manual focus)' }}
+            Camera: IMX519 sensors
         </div>
         
         <div class="container">
