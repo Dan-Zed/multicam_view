@@ -14,7 +14,11 @@ logging.basicConfig(
 logger = logging.getLogger('multicam_app')
 
 app = Flask(__name__)
-app.config['CAPTURE_FOLDER'] = 'captures'
+
+# Use absolute path for captures folder
+captures_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'captures')
+app.config['CAPTURE_FOLDER'] = captures_dir
+logger.info(f"Using captures directory: {captures_dir}")
 
 # Create captures directory if it doesn't exist
 if not os.path.exists(app.config['CAPTURE_FOLDER']):
@@ -266,6 +270,95 @@ def toggle_cycle():
     except Exception as e:
         logger.error(f"Error toggling camera cycle: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/debug/captures')
+def debug_captures():
+    """Debug route to list captures directory contents."""
+    try:
+        capture_dir = app.config['CAPTURE_FOLDER']
+        logger.info(f"Listing contents of {capture_dir}")
+        
+        # Get directory contents
+        if not os.path.exists(capture_dir):
+            return jsonify({
+                'error': f"Directory {capture_dir} does not exist",
+                'success': False
+            })
+            
+        files = os.listdir(capture_dir)
+        file_info = []
+        
+        for filename in files:
+            filepath = os.path.join(capture_dir, filename)
+            try:
+                stat_info = os.stat(filepath)
+                file_info.append({
+                    'name': filename,
+                    'size': stat_info.st_size,
+                    'modified': time.ctime(stat_info.st_mtime),
+                    'permissions': oct(stat_info.st_mode)[-3:]
+                })
+            except Exception as e:
+                file_info.append({
+                    'name': filename,
+                    'error': str(e)
+                })
+        
+        return jsonify({
+            'success': True,
+            'directory': capture_dir,
+            'file_count': len(files),
+            'files': file_info
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in debug captures route: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/debug/test_capture')
+def debug_test_capture():
+    """Debug route to test capturing and saving a single image."""
+    if not camera_manager:
+        return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
+        
+    try:
+        logger.info("Test capture: capturing from camera 0")
+        img = camera_manager.capture_image(0)
+        
+        # Save test image
+        test_filename = f'test_capture_{int(time.time())}.jpg'
+        test_filepath = os.path.join(app.config['CAPTURE_FOLDER'], test_filename)
+        
+        logger.info(f"Test capture: saving to {test_filepath}")
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
+        
+        img.save(test_filepath)
+        
+        # Get file info
+        stat_info = os.stat(test_filepath)
+        file_info = {
+            'filename': test_filename,
+            'path': test_filepath,
+            'size': stat_info.st_size,
+            'modified': time.ctime(stat_info.st_mtime)
+        }
+        
+        return jsonify({
+            'success': True,
+            'message': 'Test capture successful',
+            'file': file_info
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in test capture: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

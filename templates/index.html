@@ -400,6 +400,20 @@
                 statusEl.textContent = 'Capturing images from all cameras...';
                 statusEl.className = 'status success';
                 
+                // First check the captures directory
+                console.log('Checking captures directory...');
+                const debugResponse = await fetch('/debug/captures');
+                const debugData = await debugResponse.json();
+                console.log('Captures directory:', debugData);
+                
+                // Now try the test capture
+                console.log('Trying test capture...');
+                const testResponse = await fetch('/debug/test_capture');
+                const testData = await testResponse.json();
+                console.log('Test capture result:', testData);
+                
+                // Now try the full capture
+                console.log('Starting full capture process...');
                 const response = await fetch('/capture');
                 console.log('Capture response:', response);
                 const data = await response.json();
@@ -407,7 +421,7 @@
                 
                 if (data.success) {
                     console.log('Successfully captured images, updating preview...');
-                    updateLastCapture();
+                    await updateLastCapture();
                     statusEl.textContent = 'Images captured successfully!';
                     setTimeout(() => {
                         statusEl.style.display = 'none';
