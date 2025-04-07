@@ -67,8 +67,8 @@
         <button id="btnTestCapture">Test Single Capture</button>
         <button id="btnCapture">Capture Images</button>
         <button id="btnTestPipeline">Test Capture Pipeline</button>
-        <button id="btnListCaptures">List Captures</button>
-        <button id="btnLatestCapture">Get Latest Capture</button>
+        <button id="btnDebugCapture">Debug Current Capture Folder</button>
+        <button id="btnCheckJSEvents">Check JavaScript Events</button>
     </div>
     
     <div id="status" class="status" style="display: none;"></div>
@@ -168,22 +168,62 @@
             }
         });
         
-        // List captures
-        document.getElementById('btnListCaptures').addEventListener('click', async () => {
-            console.log('Listing captures...');
+        // Debug current capture folder
+        document.getElementById('btnDebugCapture').addEventListener('click', async () => {
+            console.log('Debugging capture folder...');
             await makeRequest('/debug/captures');
         });
         
-        // Get latest capture
-        document.getElementById('btnLatestCapture').addEventListener('click', async () => {
-            console.log('Getting latest capture...');
-            const data = await makeRequest('/latest_capture');
+        // Check JavaScript events
+        document.getElementById('btnCheckJSEvents').addEventListener('click', () => {
+            console.log('Checking JavaScript events...');
             
-            if (data && data.success) {
-                const imageEl = document.getElementById('previewImage');
-                imageEl.src = `/captures/${data.filename}?t=${Date.now()}`; // Add timestamp to prevent caching
-                document.getElementById('imagePreview').style.display = 'block';
+            // Create a test DIV to check event triggering
+            const testDiv = document.createElement('div');
+            testDiv.style.display = 'none';
+            testDiv.id = 'eventTestDiv';
+            document.body.appendChild(testDiv);
+            
+            // Try different event handlers
+            let eventResults = {};
+            
+            // Test click event
+            try {
+                let clickFired = false;
+                testDiv.addEventListener('click', () => { clickFired = true; });
+                testDiv.click();
+                eventResults.click = clickFired ? 'Success' : 'Failed';
+            } catch (e) {
+                eventResults.click = `Error: ${e.message}`;
             }
+            
+            // Test custom event
+            try {
+                let customFired = false;
+                testDiv.addEventListener('customEvent', () => { customFired = true; });
+                const customEvent = new Event('customEvent');
+                testDiv.dispatchEvent(customEvent);
+                eventResults.custom = customFired ? 'Success' : 'Failed';
+            } catch (e) {
+                eventResults.custom = `Error: ${e.message}`;
+            }
+            
+            // Test fetch API
+            fetch('/camera_info')
+                .then(() => { eventResults.fetch = 'Success'; })
+                .catch((e) => { eventResults.fetch = `Error: ${e.message}`; })
+                .finally(() => {
+                    // Remove test div
+                    document.body.removeChild(testDiv);
+                    
+                    // Display results
+                    displayResponse({
+                        success: true,
+                        title: 'JavaScript Event Test Results',
+                        results: eventResults,
+                        browser: navigator.userAgent
+                    });
+                });
         });
     </script>
 </body>

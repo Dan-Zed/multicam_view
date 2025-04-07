@@ -438,10 +438,10 @@ def debug_test_capture_pipeline():
             'traceback': str(traceback.format_exc())
         }), 500
 
-@app.route('/debug/javascript_ajax_test')
-def debug_javascript_ajax_test():
-    """Debug route to test JavaScript AJAX functionality."""
-    return render_template('debug_ajax.html')
+@app.route('/debug')
+def debug_index():
+    """Render the debug page."""
+    return render_template('debug_index.html', camera_count=4)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
