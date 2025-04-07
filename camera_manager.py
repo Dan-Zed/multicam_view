@@ -5,6 +5,7 @@ import smbus2
 from picamera2 import Picamera2
 from libcamera import controls
 from PIL import Image, ImageDraw
+from unittest.mock import MagicMock  # For test mode
 
 # Configure logging
 logging.basicConfig(
@@ -41,7 +42,7 @@ class CameraManager:
         'all': 0x00,  # Four-in-one mode (default)
     }
     
-    def __init__(self, i2c_bus=11, mux_addr=0x24, camera_count=4, switch_delay=0.1):
+    def __init__(self, i2c_bus=11, mux_addr=0x24, camera_count=4, switch_delay=0.1, test_mode=False):
         self.i2c_bus = i2c_bus
         self.mux_addr = mux_addr
         self.camera_count = camera_count
@@ -57,22 +58,31 @@ class CameraManager:
         self.video_config = None
         self.still_config = None
         
-        try:
-            self.bus = smbus2.SMBus(self.i2c_bus)
-            logger.info(f"Initialized I2C bus {self.i2c_bus}")
-        except Exception as e:
-            logger.error(f"Failed to initialize I2C bus: {e}")
-            raise
-            
-        self.initialize_camera()
+        # In test mode, we don't initialize real hardware
+        self.test_mode = test_mode
+        if not test_mode:
+            try:
+                self.bus = smbus2.SMBus(self.i2c_bus)
+                logger.info(f"Initialized I2C bus {self.i2c_bus}")
+            except Exception as e:
+                logger.error(f"Failed to initialize I2C bus: {e}")
+                raise
+                
+            self.initialize_camera()
     
-    def initialize_camera(self):
+    def initialize_camera(self, mock_picam=None):
         """Initialize the Picamera2 instance and create configurations."""
         try:
-            self.picam = Picamera2()
-            camera_info = self.picam.global_camera_info()
-            logger.info(f"Camera info: {camera_info}")
-            logger.info(f"Detected IMX519 sensors")
+            # If we're in test mode or a mock was provided, use it
+            if self.test_mode or mock_picam is not None:
+                self.picam = mock_picam if mock_picam is not None else MagicMock()
+                camera_info = [{"Model": "imx519", "Location": 2, "Rotation": 0, "Id": "test_camera", "Num": 0}]
+                logger.info(f"Using mock camera for testing")
+            else:
+                self.picam = Picamera2()
+                camera_info = self.picam.global_camera_info()
+                logger.info(f"Camera info: {camera_info}")
+                logger.info(f"Detected IMX519 sensors")
             
             # Create base configurations with appropriate resolutions
             # Preview at low resolution
@@ -123,13 +133,19 @@ class CameraManager:
                     return False
                 
                 command = self.CAMERA_COMMANDS[camera_index]
-                # Write to register 0x24 with the appropriate command
-                self.bus.write_byte_data(self.mux_addr, 0x24, command)
+                
+                # In test mode, we just update the state without accessing hardware
+                if not self.test_mode:
+                    # Write to register 0x24 with the appropriate command
+                    self.bus.write_byte_data(self.mux_addr, 0x24, command)
+                
                 logger.info(f"Selected camera: {camera_index}")
                 self.current_camera = camera_index
                 
-                # Allow time for the multiplexer to switch
-                time.sleep(self.switch_delay)
+                # Allow time for the multiplexer to switch (simulated in test mode)
+                if not self.test_mode:
+                    time.sleep(self.switch_delay)
+                    
                 return True
                 
             except Exception as e:
@@ -211,6 +227,13 @@ class CameraManager:
                     self._add_center_cross(blank_img)
                     return blank_img
                 
+                # Handle test mode with a mock image
+                if self.test_mode:
+                    logger.info("Test mode: returning test image")
+                    test_img = Image.new('RGB', (640, 480), color=(100, 150, 200))
+                    self._add_center_cross(test_img)
+                    return test_img
+                
                 # Switch to still config for high-res capture
                 logger.info(f"Switching to still config for camera {camera_index if camera_index is not None else self.current_camera}")
                 self.picam.stop()
@@ -272,6 +295,21 @@ class CameraManager:
         images = []
         
         try:
+            # In test mode, create all test images at once
+            if self.test_mode:
+                logger.info("Test mode: generating test images for all cameras")
+                for i in range(self.camera_count):
+                    if i == 3:  # Broken camera
+                        img = Image.new('RGB', (640, 480), color='black')
+                        draw = ImageDraw.Draw(img)
+                        draw.text((240, 240), "Camera Disconnected", fill=(255, 0, 0))
+                    else:
+                        img = Image.new('RGB', (640, 480), color=(100, 150, 200))
+                    self._add_center_cross(img)
+                    images.append(img)
+                return images
+            
+            # Normal hardware mode
             for i in range(self.camera_count):
                 logger.info(f"Capturing from camera {i}")
                 # Use the capture_image method which now handles the broken camera 4
@@ -355,8 +393,8 @@ class CameraManager:
         if self.is_cycling:
             self.stop_camera_cycle()
             
-        if self.picam:
+        if self.picam and not self.test_mode:
             self.picam.stop()
             
-        if self.bus:
+        if hasattr(self, 'bus') and self.bus and not self.test_mode:
             self.bus.close()

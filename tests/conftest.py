@@ -22,10 +22,17 @@ def app():
     cam.app.config['TESTING'] = True
     cam.app.config['CAPTURE_FOLDER'] = test_dir
     
+    # Ensure the camera_manager is mocked
+    old_cm = cam.camera_manager
+    cam.camera_manager = None  # Will be set by mock_camera_manager fixture when needed
+    
     # Return the Flask test client
     with cam.app.test_client() as client:
         # Provide the context
         yield client
+        
+    # Restore the original camera_manager
+    cam.camera_manager = old_cm
     
     # Clean up the temp directory after the test
     shutil.rmtree(test_dir)

@@ -44,8 +44,11 @@ class TestCameraManager:
     
     def test_initialization(self, mocked_smbus, mocked_picamera):
         """Test that CameraManager initializes correctly."""
-        # This will use our mocked SMBus and Picamera2
-        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4)
+        # This will use our mocked SMBus and Picamera2, and test_mode=True to avoid hardware access
+        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4, test_mode=True)
+        
+        # Initialize with the mock camera
+        cm.initialize_camera(mock_picam=mocked_picamera)
         
         # Check it initialized bus with the right address
         mocked_smbus.write_byte_data.assert_called_once()
@@ -61,7 +64,11 @@ class TestCameraManager:
     
     def test_select_camera(self, mocked_smbus, mocked_picamera):
         """Test camera selection."""
-        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4)
+        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4, test_mode=True)
+        cm.initialize_camera(mock_picam=mocked_picamera)
+        
+        # Set up the bus for commands
+        cm.bus = mocked_smbus
         
         # Reset the mock to clear initialization calls
         mocked_smbus.reset_mock()
@@ -85,7 +92,11 @@ class TestCameraManager:
     
     def test_camera_cycle(self, mocked_smbus, mocked_picamera):
         """Test camera cycling."""
-        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4)
+        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4, test_mode=True)
+        cm.initialize_camera(mock_picam=mocked_picamera)
+        
+        # Set up the bus for commands
+        cm.bus = mocked_smbus
         
         # Start cycling
         cm.start_camera_cycle(interval=0.01)  # Fast interval for testing
@@ -108,7 +119,11 @@ class TestCameraManager:
     @patch('time.sleep')  # Mock sleep to speed up tests
     def test_capture_image(self, mock_sleep, mocked_smbus, mocked_picamera):
         """Test image capture."""
-        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4)
+        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4, test_mode=True)
+        cm.initialize_camera(mock_picam=mocked_picamera)
+        
+        # Set up the bus for commands
+        cm.bus = mocked_smbus
         
         # Capture from camera 0
         mocked_picamera.reset_mock()
@@ -138,7 +153,11 @@ class TestCameraManager:
     @patch('time.sleep')  # Mock sleep to speed up tests
     def test_capture_all_cameras(self, mock_sleep, mocked_smbus, mocked_picamera):
         """Test capturing from all cameras."""
-        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4)
+        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4, test_mode=True)
+        cm.initialize_camera(mock_picam=mocked_picamera)
+        
+        # Set up the bus for commands
+        cm.bus = mocked_smbus
         
         # Capture from all cameras
         images = cm.capture_all_cameras()
@@ -152,7 +171,7 @@ class TestCameraManager:
     
     def test_create_grid_image(self, test_images):
         """Test grid image creation."""
-        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4)
+        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4, test_mode=True)
         
         # Create a grid from test images
         grid = cm.create_grid_image(test_images)
@@ -167,7 +186,7 @@ class TestCameraManager:
     
     def test_add_center_cross(self, mocked_smbus, mocked_picamera):
         """Test adding center cross to image."""
-        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4)
+        cm = CameraManager(i2c_bus=1, mux_addr=0x24, camera_count=4, test_mode=True)
         
         # Create a test image
         image = Image.new('RGB', (640, 480), color=(100, 100, 100))
