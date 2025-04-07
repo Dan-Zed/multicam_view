@@ -104,7 +104,7 @@ The main entry point for the application, responsible for:
 
 1. Web browser connects to `/video_feed` endpoint
 2. The `gen_frames()` function:
-   - Captures frames from the current camera
+   - Captures frames from the camera in four-in-one mode
    - Adds camera information and center crosshairs
    - Converts to JPEG format
    - Yields frames as an MJPEG stream
@@ -138,37 +138,29 @@ The Camera Manager follows the resource manager pattern, with proper initializat
 
 The web interface observes camera state through periodic polling:
 - JavaScript polls `/camera_info` endpoint
-- UI updates to reflect current camera state
-- Camera cycles independently of UI observation
+- UI updates to reflect current camera state (four-in-one mode or single camera)
+- Camera state changes independently of UI observation
 
 ### 3. Factory Pattern
 
 The Camera Manager creates different types of configurations:
-- Video configuration for streaming
-- Still configuration for high-resolution capture
+- Video configuration for streaming (720p with continuous autofocus)
+- Still configuration for high-resolution capture (4056x3040 with one-time autofocus)
 
 ### 4. State Pattern
 
 The camera system has different states:
+- Four-in-one preview mode (showing all cameras)
 - Individual camera selected
-- All cameras mode
-- Cycling active/inactive
+- Capturing high-resolution images
 
 ## Thread Management
-
-### Camera Cycling Thread:
-
-- Created when `start_camera_cycle()` is called
-- Runs as a daemon thread
-- Cycles through cameras at specified interval
-- Can be stopped via `stop_camera_cycle()`
-- Uses a local reference to state variables to avoid race conditions
 
 ### Main Application Thread:
 
 - Handles HTTP requests
 - Manages camera operations
-- Uses locks to synchronize with the cycling thread
+- Uses locks to ensure thread-safe camera access
 
 ## Error Handling
 
@@ -190,8 +182,8 @@ The application implements a multi-layered error handling approach:
 
 ### Camera Configurations:
 
-- **Video Configuration**: Low resolution (640x480) for reliable streaming
-- **Still Configuration**: High resolution (4056x3040) for detailed captures
+- **Video Configuration**: 720p resolution (1280x720) with continuous autofocus for reliable streaming
+- **Still Configuration**: High resolution (4056x3040) with one-time autofocus for detailed captures
 
 ### Camera Multiplexer Commands:
 
@@ -288,11 +280,13 @@ multicam_view/
 Camera configurations can be modified in `camera_manager.py`:
 ```python
 self.video_config = self.picam.create_video_configuration(
-    main={"size": (640, 480)}  # Adjust resolution here
+    main={"size": (1280, 720)},  # Adjust resolution here
+    controls={"AfMode": controls.AfModeEnum.Continuous}  # Autofocus settings
 )
 
 self.still_config = self.picam.create_still_configuration(
-    main={"size": (4056, 3040)}  # Adjust resolution here
+    main={"size": (4056, 3040)},  # Adjust resolution here
+    controls={"AfMode": controls.AfModeEnum.Auto}  # Autofocus settings
 )
 ```
 
