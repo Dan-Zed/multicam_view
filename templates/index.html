@@ -60,8 +60,8 @@
         }
 
         .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 2rem;
         }
 
@@ -100,8 +100,9 @@
         }
 
         .stream-container {
-            width: 640px;
-            height: 480px;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16/9; /* For 720p */
             overflow: hidden;
             border-radius: 4px;
             margin-bottom: 1rem;
@@ -224,15 +225,11 @@
             .stream-container {
                 width: 100%;
                 height: auto;
-                aspect-ratio: 4/3;
+                aspect-ratio: 16/9;
             }
         }
 
         @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-            
             .nav {
                 padding: 1rem;
             }
