@@ -248,13 +248,13 @@
     <div class="main-content">
         <div class="camera-info">
             <i class="fas fa-camera"></i>
-            multicam array | switching between cameras at low frame rate
+            multicam array | showing all cameras in four-in-one preview mode
         </div>
         
         <div class="controls">
             <button id="cycleToggle" class="btn">
-                <i class="fas fa-sync-alt"></i>
-                <span id="cycleText">stop cycling</span>
+                <i class="fas fa-th"></i>
+                <span id="cycleText">single camera view</span>
             </button>
             
             <div class="camera-selector">
@@ -334,31 +334,57 @@
                     currentCamera = data.current_camera;
                     
                     // Update UI
-                    cycleText.textContent = isCycling ? 'stop cycling' : 'start cycling';
+                    const icon = cycleToggle.querySelector('i');
+                    if (isCycling) {
+                        cycleText.textContent = 'single camera view';
+                        icon.className = 'fas fa-th';
+                    } else {
+                        cycleText.textContent = 'four-in-one view';
+                        icon.className = 'fas fa-square';
+                    }
+                    
+                    // Update camera indicators
                     updateCameraIndicator(currentCamera);
+                    
+                    // Update camera button active states
+                    cameraBtns.forEach(btn => {
+                        if (currentCamera === parseInt(btn.dataset.camera)) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
                 }
             } catch (error) {
                 console.error('Error getting camera info:', error);
             }
         }
         
-        // Toggle camera cycling
-        async function toggleCycle() {
+        // Toggle between four-in-one mode and single camera view
+        async function toggleMode() {
             try {
                 const response = await fetch('/toggle_cycle');
                 const data = await response.json();
                 
                 if (data.success) {
                     isCycling = data.cycling;
-                    cycleText.textContent = isCycling ? 'stop cycling' : 'start cycling';
+                    cycleText.textContent = isCycling ? 'single camera view' : 'four-in-one view';
                     
-                    // Clear active camera button when cycling
+                    // Update icon
+                    const icon = cycleToggle.querySelector('i');
+                    if (isCycling) {
+                        icon.className = 'fas fa-th';
+                    } else {
+                        icon.className = 'fas fa-square';
+                    }
+                    
+                    // Clear active camera button when in four-in-one mode
                     if (isCycling) {
                         cameraBtns.forEach(btn => btn.classList.remove('active'));
                     }
                 }
             } catch (error) {
-                console.error('Error toggling cycle:', error);
+                console.error('Error toggling view mode:', error);
             }
         }
         
@@ -462,8 +488,8 @@
             getCameraInfo();
             updateLastCapture();
             
-            // Toggle cycling
-            cycleToggle.addEventListener('click', toggleCycle);
+            // Toggle view mode
+            cycleToggle.addEventListener('click', toggleMode);
             
             // Camera selection
             cameraBtns.forEach(btn => {

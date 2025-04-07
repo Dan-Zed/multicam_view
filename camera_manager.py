@@ -97,12 +97,13 @@ class CameraManager:
                 controls={"AfMode": controls.AfModeEnum.Auto}  # Enable one-time autofocus for captures
             )
             
-            # Start with video configuration
+            # Start with video configuration and set to four-in-one mode
             self.picam.configure(self.video_config)
             self.picam.start()
             
-            # Select all cameras initially
+            # Select all cameras (four-in-one mode) initially
             self.select_camera('all')
+            logger.info("Camera initialized in four-in-one mode for preview")
             
         except Exception as e:
             logger.error(f"Failed to initialize camera: {e}")
@@ -166,59 +167,32 @@ class CameraManager:
     
     def start_camera_cycle(self, interval=1.0):
         """
-        Start cycling through cameras at a specified interval.
-        
-        Parameters:
-        -----------
-        interval : float
-            Time in seconds between camera switches
+        Set preview to four-in-one mode for showing all cameras simultaneously.
+        The interval parameter is kept for API compatibility but is not used.
         """
+        # If already in cycling mode, do nothing
         if self.is_cycling:
             return
             
-        self.cycle_interval = interval
+        # Set flag to indicate we're in four-in-one mode
+        self.cycle_interval = interval  # Keep for compatibility
         self.is_cycling = True
         
-        def cycle_cameras():
-            camera_idx = 0
-            # Local reference to is_cycling to avoid race conditions
-            local_is_cycling = self.is_cycling
-            while local_is_cycling:
-                try:
-                    self.select_camera(camera_idx)
-                    time.sleep(self.cycle_interval)
-                    # Skip to next camera, skipping index 3 which is broken
-                    camera_idx = (camera_idx + 1) % self.camera_count
-                    if camera_idx == 3:  # Skip the broken camera
-                        camera_idx = 0
-                    # Update local reference to is_cycling
-                    local_is_cycling = self.is_cycling
-                except Exception as e:
-                    # If we encounter an error, log it but keep going
-                    if self.is_cycling:  # Only log if we're still cycling
-                        logger.error(f"Error during camera cycling: {e}")
-                    break
+        # Switch to four-in-one mode
+        logger.info("Setting preview to four-in-one mode")
+        self.select_camera('all')
         
-        self.cycle_thread = threading.Thread(target=cycle_cameras)
-        self.cycle_thread.daemon = True
-        self.cycle_thread.start()
-        logger.info(f"Started camera cycling with interval {interval}s")
+        # No need for a thread anymore as we're not actually cycling
     
     def stop_camera_cycle(self):
-        """Stop cycling through cameras."""
-        # Set flag first to signal thread to stop
+        """Switch from four-in-one mode to a single camera view."""
+        # Set flag to indicate we're not in four-in-one mode
         self.is_cycling = False
+        logger.info("Exited four-in-one preview mode")
         
-        # Safely join the thread
-        if self.cycle_thread and self.cycle_thread.is_alive():
-            try:
-                self.cycle_thread.join(timeout=2.0)
-            except Exception as e:
-                logger.warning(f"Error joining cycle thread: {e}")
-            finally:
-                self.cycle_thread = None
-                
-        logger.info("Stopped camera cycling")
+        # By default, select camera 0 when exiting four-in-one mode
+        # This gives a consistent behavior when toggling
+        self.select_camera(0)
     
     def capture_image(self, camera_index=None):
         """
