@@ -4,7 +4,7 @@ import os
 import time
 import logging
 import traceback
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 from camera_manager import CameraManager
 
 # Configure logging
@@ -84,6 +84,20 @@ def gen_frames():
             
             # Add center cross
             camera_manager._add_center_cross(img)
+            
+            # Apply rotation if needed for cameras 0 and 1
+            if isinstance(current_cam, int) and current_cam in [0, 1]:
+                img = camera_manager._rotate_camera_image(img, current_cam)
+            # Handle four-in-one mode (when current_cam is 'all')
+            elif current_cam == 'all':
+                # In four-in-one mode, we need to extract the top half, rotate it, and put it back
+                width, height = img.size
+                # Extract top half
+                top_half = img.crop((0, 0, width, height//2))
+                # Rotate top half by 180 degrees
+                rotated_top = ImageOps.rotate(top_half, 180)
+                # Paste it back
+                img.paste(rotated_top, (0, 0))
             
             # Convert to JPEG bytes (ensuring RGB mode)
             if img.mode == 'RGBA':

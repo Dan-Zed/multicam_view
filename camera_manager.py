@@ -4,7 +4,7 @@ import threading
 import smbus2
 from picamera2 import Picamera2
 from libcamera import controls
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 from unittest.mock import MagicMock  # For test mode
 
 # Configure logging
@@ -69,6 +69,26 @@ class CameraManager:
                 raise
                 
             self.initialize_camera()
+    
+    def _rotate_camera_image(self, image, camera_index):
+        """Rotate specific camera images by 180 degrees if needed.
+        
+        Parameters:
+        -----------
+        image : PIL.Image
+            The image to potentially rotate
+        camera_index : int
+            Index of the camera (0-3)
+            
+        Returns:
+        --------
+        PIL.Image
+            The rotated image if needed, otherwise the original image
+        """
+        # Rotate cameras 0 and 1 (top two positions) by 180 degrees
+        if camera_index in [0, 1]:
+            return ImageOps.rotate(image, 180)
+        return image
     
     def initialize_camera(self, mock_picam=None):
         """Initialize the Picamera2 instance and create configurations."""
@@ -229,6 +249,8 @@ class CameraManager:
                     text_y = (blank_img.height - text_height) // 2
                     draw.text((text_x, text_y), text, fill=(255, 0, 0))
                     self._add_center_cross(blank_img)
+                    # Rotate if needed
+                    blank_img = self._rotate_camera_image(blank_img, camera_index)
                     return blank_img
                 
                 # Handle test mode with a mock image
@@ -236,6 +258,8 @@ class CameraManager:
                     logger.info("Test mode: returning test image")
                     test_img = Image.new('RGB', (640, 480), color=(100, 150, 200))
                     self._add_center_cross(test_img)
+                    # Rotate if needed
+                    test_img = self._rotate_camera_image(test_img, camera_index)
                     return test_img
                 
                 # Switch to still config for high-res capture (includes autofocus)
@@ -252,8 +276,11 @@ class CameraManager:
                 buffer = self.picam.capture_array()
                 image = Image.fromarray(buffer)
                 
-                # Add red cross in the center
+                # Add green cross in the center
                 self._add_center_cross(image)
+                
+                # Rotate if needed
+                image = self._rotate_camera_image(image, camera_index if camera_index is not None else self.current_camera)
                 
                 # Switch back to video config (includes continuous autofocus)
                 logger.info("Switching back to video config")
@@ -339,6 +366,8 @@ class CameraManager:
                         text_y = (blank_img.height - text_height) // 2
                         draw.text((text_x, text_y), text, fill=(255, 0, 0))
                         self._add_center_cross(blank_img)
+                        # Rotate if needed
+                        blank_img = self._rotate_camera_image(blank_img, i)
                         images.append(blank_img)
                         continue
                     
@@ -361,8 +390,10 @@ class CameraManager:
                         draw.text((20, 240), f"Error: {str(e)}", fill=(255, 0, 0))
                         logger.warning(f"Created fallback error image for camera {i}")
                     
-                    # Add red cross in the center
+                    # Add green cross in the center
                     self._add_center_cross(image)
+                    # Rotate if needed
+                    image = self._rotate_camera_image(image, i)
                     
                     # Ensure image is in RGB mode
                     if image.mode == 'RGBA':
@@ -404,6 +435,9 @@ class CameraManager:
         # Make sure all images are in RGB mode
         rgb_images = []
         for i, img in enumerate(images):
+            # Apply rotation for cameras 0 and 1 (top row)
+            img = self._rotate_camera_image(img, i)
+            
             if img.mode == 'RGBA':
                 logger.info(f"Converting image {i} from RGBA to RGB")
                 rgb_images.append(img.convert('RGB'))
@@ -429,7 +463,7 @@ class CameraManager:
         return grid_image
     
     def _add_center_cross(self, image):
-        """Add a red cross in the center of the image."""
+        """Add a green cross in the center of the image."""
         draw = ImageDraw.Draw(image)
         width, height = image.size
         center_x, center_y = width // 2, height // 2
@@ -438,15 +472,15 @@ class CameraManager:
         # Draw horizontal line
         draw.line(
             (center_x - size, center_y, center_x + size, center_y),
-            fill=(255, 0, 0),
-            width=3
+            fill=(0, 255, 0),  # Green color (R,G,B)
+            width=1            # Single-pixel thin
         )
         
         # Draw vertical line
         draw.line(
             (center_x, center_y - size, center_x, center_y + size),
-            fill=(255, 0, 0),
-            width=3
+            fill=(0, 255, 0),  # Green color (R,G,B)
+            width=1            # Single-pixel thin
         )
     
     def cleanup(self):
