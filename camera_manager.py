@@ -91,7 +91,8 @@ class CameraManager:
             )
             
             # Enable autofocus for video mode
-            self.picam.set_controls({controls.AfMode: controls.AfModeEnum.Continuous})
+            if not self.test_mode:
+                self.picam.set_controls({"AfMode": controls.AfModeEnum.Continuous})
             
             # Capture at high resolution
             self.still_config = self.picam.create_still_configuration(
@@ -275,7 +276,8 @@ class CameraManager:
                 self.picam.start()
                 
                 # Apply autofocus for still capture
-                self.picam.set_controls({controls.AfMode: controls.AfModeEnum.Auto})
+                if not self.test_mode:
+                    self.picam.set_controls({"AfMode": controls.AfModeEnum.Auto})
                 
                 # Wait for camera to stabilize
                 time.sleep(0.5)
@@ -295,7 +297,8 @@ class CameraManager:
                 self.picam.start()
                 
                 # Restore continuous autofocus for video mode
-                self.picam.set_controls({controls.AfMode: controls.AfModeEnum.Continuous})
+                if not self.test_mode:
+                    self.picam.set_controls({"AfMode": controls.AfModeEnum.Continuous})
                 
                 # Ensure image is in RGB mode
                 if image.mode == 'RGBA':
@@ -358,7 +361,8 @@ class CameraManager:
                 self.picam.start()
                 
                 # Apply autofocus for still capture
-                self.picam.set_controls({controls.AfMode: controls.AfModeEnum.Auto})
+                if not self.test_mode:
+                    self.picam.set_controls({"AfMode": controls.AfModeEnum.Auto})
                 
                 # Wait for camera to stabilize
                 time.sleep(0.5)
@@ -417,7 +421,8 @@ class CameraManager:
                 self.picam.start()
                 
                 # Restore continuous autofocus for video mode
-                self.picam.set_controls({controls.AfMode: controls.AfModeEnum.Continuous})
+                if not self.test_mode:
+                    self.picam.set_controls({"AfMode": controls.AfModeEnum.Continuous})
             
             return images
         finally:
