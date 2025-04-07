@@ -18,9 +18,7 @@
     
     # Set to four-in-one mode (default)
     i2cset -y 11 0x24 0x24 0x00
-    
     ```
-    
     
 ### Important Notes
 - The multiplexer communicates over I2C bus 11 (not bus 10 as some documentation suggests)

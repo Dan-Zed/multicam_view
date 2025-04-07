@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pi Camera Dashboard</title>
+    <title>multicam view</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -52,6 +52,13 @@
             color: #3498db;
         }
 
+        .controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
         .container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -74,6 +81,9 @@
             background: #f8f9fa;
             padding: 1rem;
             border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .card-header h2 {
@@ -91,7 +101,7 @@
 
         .stream-container {
             width: 640px;
-            height: {{ '360px' if is_v3 else '480px' }};
+            height: 480px;
             overflow: hidden;
             border-radius: 4px;
             margin-bottom: 1rem;
@@ -105,34 +115,32 @@
             display: block;
         }
 
-        /* Crosshair styles */
-        .crosshair {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            z-index: 10;
+        /* Camera controls */
+        .camera-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
         }
-        
-        .crosshair-horizontal, .crosshair-vertical {
-            position: absolute;
-            background-color: rgba(255, 0, 0, 0.8);
+
+        .camera-btn {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
-        
-        .crosshair-horizontal {
-            height: 1px;
-            width: 50%;
-            top: 50%;
-            left: 25%;
+
+        .camera-btn:hover {
+            background: #e0e0e0;
         }
-        
-        .crosshair-vertical {
-            width: 1px;
-            height: 50%;
-            left: 50%;
-            top: 25%;
+
+        .camera-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
         }
 
         .btn {
@@ -189,6 +197,24 @@
             border: 1px solid #f5c6cb;
         }
 
+        /* Indicator for current camera */
+        .camera-indicator {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .camera-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .camera-dot.active {
+            background: #3498db;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -198,7 +224,7 @@
             .stream-container {
                 width: 100%;
                 height: auto;
-                aspect-ratio: {{ '16/9' if is_v3 else '4/3' }};
+                aspect-ratio: 4/3;
             }
         }
 
@@ -225,25 +251,41 @@
     <div class="main-content">
         <div class="camera-info">
             <i class="fas fa-camera"></i>
-            Detected: {{ 'Pi Camera V3 (autofocus enabled)' if is_v3 else 'HQ Camera (manual focus)' }}
+            multicam array | switching between cameras at low frame rate
+        </div>
+        
+        <div class="controls">
+            <button id="cycleToggle" class="btn">
+                <i class="fas fa-sync-alt"></i>
+                <span id="cycleText">stop cycling</span>
+            </button>
+            
+            <div class="camera-selector">
+                <button class="camera-btn" data-camera="0">cam 1</button>
+                <button class="camera-btn" data-camera="1">cam 2</button>
+                <button class="camera-btn" data-camera="2">cam 3</button>
+                <button class="camera-btn" data-camera="3">cam 4</button>
+            </div>
         </div>
         
         <div class="container">
             <div class="card">
                 <div class="card-header">
                     <h2>live stream</h2>
+                    <div class="camera-indicator">
+                        <div class="camera-dot" data-camera="0"></div>
+                        <div class="camera-dot" data-camera="1"></div>
+                        <div class="camera-dot" data-camera="2"></div>
+                        <div class="camera-dot" data-camera="3"></div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="stream-container">
                         <img src="{{ url_for('video_feed') }}" class="stream-img" alt="live stream">
-                        <div class="crosshair">
-                            <div class="crosshair-horizontal"></div>
-                            <div class="crosshair-vertical"></div>
-                        </div>
                     </div>
-                    <button onclick="captureImage()" class="btn">
+                    <button onclick="captureImages()" class="btn">
                         <i class="fas fa-camera"></i>
-                        capture image
+                        capture from all cameras
                     </button>
                     <div id="captureStatus" class="status"></div>
                 </div>
@@ -251,7 +293,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2>last capture</h2>
+                    <h2>last capture (2x2 grid)</h2>
                 </div>
                 <div class="card-body">
                     <div class="stream-container">
@@ -263,18 +305,105 @@
     </div>
 
     <script>
-        async function captureImage() {
+        // Global state
+        let isCycling = true;
+        let currentCamera = null;
+        
+        // Get DOM elements
+        const cycleToggle = document.getElementById('cycleToggle');
+        const cycleText = document.getElementById('cycleText');
+        const cameraBtns = document.querySelectorAll('.camera-btn');
+        const cameraDots = document.querySelectorAll('.camera-dot');
+        
+        // Update camera indicator
+        function updateCameraIndicator(cameraId) {
+            cameraDots.forEach(dot => {
+                dot.classList.remove('active');
+            });
+            
+            if (cameraId !== null && cameraId !== 'all') {
+                cameraDots[cameraId].classList.add('active');
+            }
+        }
+        
+        // Initialize the camera info
+        async function getCameraInfo() {
+            try {
+                const response = await fetch('/camera_info');
+                const data = await response.json();
+                
+                if (data.success) {
+                    isCycling = data.cycling;
+                    currentCamera = data.current_camera;
+                    
+                    // Update UI
+                    cycleText.textContent = isCycling ? 'stop cycling' : 'start cycling';
+                    updateCameraIndicator(currentCamera);
+                }
+            } catch (error) {
+                console.error('Error getting camera info:', error);
+            }
+        }
+        
+        // Toggle camera cycling
+        async function toggleCycle() {
+            try {
+                const response = await fetch('/toggle_cycle');
+                const data = await response.json();
+                
+                if (data.success) {
+                    isCycling = data.cycling;
+                    cycleText.textContent = isCycling ? 'stop cycling' : 'start cycling';
+                    
+                    // Clear active camera button when cycling
+                    if (isCycling) {
+                        cameraBtns.forEach(btn => btn.classList.remove('active'));
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling cycle:', error);
+            }
+        }
+        
+        // Select a specific camera
+        async function selectCamera(cameraId) {
+            try {
+                const response = await fetch(`/select_camera/${cameraId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentCamera = cameraId;
+                    isCycling = false;
+                    
+                    // Update UI
+                    cycleText.textContent = 'start cycling';
+                    cameraBtns.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    cameraBtns[cameraId].classList.add('active');
+                    updateCameraIndicator(cameraId);
+                }
+            } catch (error) {
+                console.error(`Error selecting camera ${cameraId}:`, error);
+            }
+        }
+        
+        // Capture images from all cameras
+        async function captureImages() {
             const statusEl = document.getElementById('captureStatus');
             const btn = document.querySelector('.btn');
             btn.disabled = true;
             
             try {
+                statusEl.textContent = 'Capturing images from all cameras...';
+                statusEl.className = 'status success';
+                
                 const response = await fetch('/capture');
                 const data = await response.json();
+                
                 if (data.success) {
                     updateLastCapture();
-                    statusEl.textContent = 'Image captured successfully!';
-                    statusEl.className = 'status success';
+                    statusEl.textContent = 'Images captured successfully!';
                     setTimeout(() => {
                         statusEl.style.display = 'none';
                     }, 3000);
@@ -282,17 +411,19 @@
                     throw new Error(data.error);
                 }
             } catch (error) {
-                statusEl.textContent = 'Error capturing image: ' + error.message;
+                statusEl.textContent = 'Error capturing images: ' + error.message;
                 statusEl.className = 'status error';
             } finally {
                 btn.disabled = false;
             }
         }
-
+        
+        // Update the last capture preview
         async function updateLastCapture() {
             try {
                 const response = await fetch('/latest_capture');
                 const data = await response.json();
+                
                 if (data.success) {
                     const img = document.getElementById('lastCapture');
                     img.src = `/captures/${data.filename}?t=${Date.now()}`;
@@ -301,9 +432,27 @@
                 console.error('Error updating last capture:', error);
             }
         }
-
-        // Load last capture on page load
-        updateLastCapture();
+        
+        // Set up event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize
+            getCameraInfo();
+            updateLastCapture();
+            
+            // Toggle cycling
+            cycleToggle.addEventListener('click', toggleCycle);
+            
+            // Camera selection
+            cameraBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const cameraId = parseInt(btn.dataset.camera);
+                    selectCamera(cameraId);
+                });
+            });
+            
+            // Set up interval to refresh camera indicator
+            setInterval(getCameraInfo, 2000);
+        });
     </script>
 </body>
 </html>

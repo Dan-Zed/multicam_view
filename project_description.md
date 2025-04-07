@@ -1,3 +1,5 @@
+- running it lightweight, on raspberry pi 5 linux 
+    -- so far the copied project is running fine also with system dependencies not listed in the poetry env
 - live stream four cameras at once for preview
     -- stream is in large format on the webgui
 - have each camera stream individually, not together, this means switching between each at a low frame rate and low resolution
