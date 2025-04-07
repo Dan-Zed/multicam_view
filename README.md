@@ -82,19 +82,27 @@ A web-based application for viewing and capturing images from a 4-camera array o
 
 ## Testing
 
-A test script is provided to verify camera functionality:
+The project includes a comprehensive test suite using pytest:
 
-```
-./test_camera.py
-```
+1. Install testing dependencies:
+   ```
+   poetry install --with dev
+   ```
 
-This will test:
-- Camera selection
-- Image capture
-- Grid image creation
-- Camera cycling
+2. Run the tests:
+   ```
+   poetry run python run_tests.py
+   ```
+   
+   Or use pytest directly:
+   ```
+   poetry run pytest
+   ```
 
-Test images are saved to the `test_images` directory.
+3. For coverage reports:
+   ```
+   poetry run pytest --cov=camera_manager --cov=cam
+   ```
 
 ## Troubleshooting
 
