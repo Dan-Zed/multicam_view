@@ -121,44 +121,76 @@ def capture():
         return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
         
     try:
-        logger.info("Starting capture from all cameras")
+        logger.info("==== Starting capture from all cameras ====")
         n = get_next_capture_number()
         logger.info(f"Using capture number {n}")
         
+        # Check capture directory
+        capture_dir = app.config['CAPTURE_FOLDER']
+        if not os.path.exists(capture_dir):
+            logger.warning(f"Capture directory {capture_dir} does not exist, creating it")
+            os.makedirs(capture_dir, exist_ok=True)
+            try:
+                os.chmod(capture_dir, 0o755)
+                logger.info(f"Set permissions on capture directory {capture_dir}")
+            except Exception as e:
+                logger.warning(f"Could not set permissions on {capture_dir}: {e}")
+        
         # Capture from all cameras
         logger.info("Capturing images from all cameras")
-        images = camera_manager.capture_all_cameras()
-        logger.info(f"Successfully captured {len(images)} images")
+        try:
+            images = camera_manager.capture_all_cameras()
+            logger.info(f"Successfully captured {len(images)} images")
+        except Exception as e:
+            logger.error(f"Failed to capture all camera images: {e}", exc_info=True)
+            return jsonify({'success': False, 'error': f'Image capture failed: {str(e)}'}), 500
         
         # Save individual images
         filenames = []
         for i, img in enumerate(images):
             filename = f'capture_{n}_cam{i}.jpg'
-            filepath = os.path.join(app.config['CAPTURE_FOLDER'], filename)
+            filepath = os.path.join(capture_dir, filename)
             logger.info(f"Saving image from camera {i} to {filepath}")
-            img.save(filepath)
-            # Ensure file permissions
             try:
-                os.chmod(filepath, 0o644)
+                # Ensure image is in RGB mode for JPEG
+                if img.mode == 'RGBA':
+                    img = img.convert('RGB')
+                img.save(filepath)
+                # Ensure file permissions
+                try:
+                    os.chmod(filepath, 0o644)
+                except Exception as e:
+                    logger.warning(f"Could not set permissions on {filepath}: {e}")
+                filenames.append(filename)
+                logger.info(f"Saved capture from camera {i} to {filepath}")
             except Exception as e:
-                logger.warning(f"Could not set permissions on {filepath}: {e}")
-            filenames.append(filename)
-            logger.info(f"Saved capture from camera {i} to {filepath}")
+                logger.error(f"Failed to save image from camera {i}: {e}")
+                # We'll continue to try saving other images
+        
+        if not filenames:
+            logger.error("Failed to save any images")
+            return jsonify({'success': False, 'error': 'Failed to save any images'}), 500
         
         # Create and save combined grid image
         logger.info("Creating grid image")
-        grid_img = camera_manager.create_grid_image(images)
-        grid_filename = f'capture_{n}_grid.jpg'
-        grid_filepath = os.path.join(app.config['CAPTURE_FOLDER'], grid_filename)
-        logger.info(f"Saving grid image to {grid_filepath}")
-        grid_img.save(grid_filepath)
-        # Ensure file permissions
         try:
-            os.chmod(grid_filepath, 0o644)
+            grid_img = camera_manager.create_grid_image(images)
+            grid_filename = f'capture_{n}_grid.jpg'
+            grid_filepath = os.path.join(capture_dir, grid_filename)
+            logger.info(f"Saving grid image to {grid_filepath}")
+            grid_img.save(grid_filepath)
+            # Ensure file permissions
+            try:
+                os.chmod(grid_filepath, 0o644)
+            except Exception as e:
+                logger.warning(f"Could not set permissions on {grid_filepath}: {e}")
+            logger.info(f"Saved combined grid image to {grid_filepath}")
         except Exception as e:
-            logger.warning(f"Could not set permissions on {grid_filepath}: {e}")
-        logger.info(f"Saved combined grid image to {grid_filepath}")
+            logger.error(f"Failed to create or save grid image: {e}", exc_info=True)
+            grid_filename = None
+            # We'll still return the individual images if they were saved
         
+        logger.info("==== Capture process completed successfully ====")
         return jsonify({
             'success': True, 
             'filenames': filenames,
@@ -166,7 +198,7 @@ def capture():
         })
         
     except Exception as e:
-        logger.error(f"Error during capture: {e}", exc_info=True)
+        logger.error(f"Unhandled error during capture: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/latest_capture')

@@ -514,23 +514,40 @@
             captureBtn.disabled = true;
             statusEl.style.display = 'block';
             
-            log('Starting capture process...');
+            log('===== Starting capture process =====');
             
             try {
-                log('Capturing images from all cameras...');
-                statusEl.textContent = 'Capturing images from all cameras...';
+                log('STEP 1: Checking captures directory');
+                statusEl.textContent = 'Checking captures directory...';
                 statusEl.className = 'status success';
                 
-                // First check the captures directory
-                log('Checking captures directory...');
                 const debugResponse = await fetch('/debug/captures');
                 const debugData = await debugResponse.json();
                 log('Captures directory info:', false);
                 log(debugData, false);
                 
-                // Now try the full capture
-                log('Sending capture request...');
+                if (!debugData.success) {
+                    log('WARNING: Issue with captures directory!', true);
+                }
+                
+                log('STEP 2: Testing single camera capture');
+                statusEl.textContent = 'Testing single camera capture...';
+                const testResponse = await fetch('/debug/test_capture');
+                const testData = await testResponse.json();
+                log('Test capture result:', false);
+                log(testData, false);
+                
+                if (!testData.success) {
+                    log('WARNING: Single camera test capture failed!', true);
+                    log('Proceeding to try full capture anyway...', true);
+                }
+                
+                log('STEP 3: Performing full capture (all cameras)');
+                statusEl.textContent = 'Capturing images from all cameras...';
+                const startTime = Date.now();
                 const response = await fetch('/capture');
+                const endTime = Date.now();
+                log(`Capture request completed in ${endTime - startTime}ms`);
                 log('Response status: ' + response.status);
                 
                 if (!response.ok) {
@@ -542,8 +559,19 @@
                 log(data, false);
                 
                 if (data.success) {
-                    log('Successfully captured images, updating preview...');
+                    log('STEP 4: Verifying results');
+                    log(`Successfully captured ${data.filenames.length} images`);
+                    if (data.grid_filename) {
+                        log(`Grid image created: ${data.grid_filename}`);
+                    } else {
+                        log('WARNING: Grid image was not created', true);
+                    }
+                    
+                    log('STEP 5: Updating preview');
+                    statusEl.textContent = 'Updating preview...';
                     await updateLastCapture();
+                    
+                    log('===== Capture process completed successfully =====');
                     statusEl.textContent = 'Images captured successfully!';
                     setTimeout(() => {
                         statusEl.style.display = 'none';
@@ -553,7 +581,9 @@
                 }
             } catch (error) {
                 console.error('Error capturing images:', error);
+                log('===== ERROR IN CAPTURE PROCESS =====', true);
                 log('Error capturing images: ' + error.message, true);
+                log('If the error persists, try running the test pipeline manually', true);
                 statusEl.textContent = 'Error capturing images: ' + error.message;
                 statusEl.className = 'status error';
             } finally {

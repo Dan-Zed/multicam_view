@@ -84,17 +84,33 @@ def test_grid_image(cm):
     try:
         # Capture from all cameras
         logger.info("Capturing from all cameras")
-        images = cm.capture_all_cameras()
-        assert len(images) == cm.camera_count, f"Expected {cm.camera_count} images, got {len(images)}"
+        logger.info("Step 1: Capturing from all cameras")
+        try:
+            images = cm.capture_all_cameras()
+            logger.info(f"Successfully captured {len(images)} images")
+            assert len(images) == cm.camera_count, f"Expected {cm.camera_count} images, got {len(images)}"
+        except Exception as e:
+            logger.error(f"Failed to capture all camera images: {e}", exc_info=True)
+            raise
         
         # Create grid image
-        logger.info("Creating grid image")
-        grid = cm.create_grid_image(images)
+        logger.info("Step 2: Creating grid image")
+        try:
+            grid = cm.create_grid_image(images)
+            logger.info("Successfully created grid image")
+        except Exception as e:
+            logger.error(f"Failed to create grid image: {e}", exc_info=True)
+            raise
         
         # Save grid image
-        filename = os.path.join(TEST_DIR, "test_grid.jpg")
-        grid.save(filename)
-        logger.info(f"Saved grid image to {filename}")
+        logger.info("Step 3: Saving grid image")
+        try:
+            filename = os.path.join(TEST_DIR, "test_grid.jpg")
+            grid.save(filename)
+            logger.info(f"Saved grid image to {filename}")
+        except Exception as e:
+            logger.error(f"Failed to save grid image: {e}", exc_info=True)
+            raise
         
         logger.info("Grid image test passed")
     except Exception as e:

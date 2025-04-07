@@ -106,7 +106,7 @@ class CameraManager:
             logger.error(f"Failed to initialize camera: {e}")
             raise
     
-    def select_camera(self, camera_index):
+    def select_camera(self, camera_index, already_locked=False):
         """
         Select a specific camera by switching the multiplexer.
         
@@ -114,13 +114,15 @@ class CameraManager:
         -----------
         camera_index : int or str
             Index of the camera (0-3) or 'all' for four-in-one mode
-        
+        already_locked : bool
+            If True, assumes the lock is already acquired
+            
         Returns:
         --------
         bool
             True if successful, False otherwise
         """
-        with self.lock:
+        def _do_select_camera():
             try:
                 # Special handling for camera 4 (index 3) which is broken
                 if camera_index == 3:
@@ -151,6 +153,14 @@ class CameraManager:
             except Exception as e:
                 logger.error(f"Failed to select camera {camera_index}: {e}")
                 return False
+        
+        # If already_locked is True, we assume the lock is already acquired
+        if already_locked:
+            return _do_select_camera()
+        else:
+            # Otherwise, acquire the lock first
+            with self.lock:
+                return _do_select_camera()
     
     def start_camera_cycle(self, interval=1.0):
         """
@@ -229,7 +239,7 @@ class CameraManager:
                 
             try:
                 if camera_index is not None:
-                    self.select_camera(camera_index)
+                    self.select_camera(camera_index, already_locked=True)
                 
                 # Special handling for camera 4 (index 3)
                 if camera_index == 3 or self.current_camera == 3:
@@ -289,8 +299,8 @@ class CameraManager:
                     self.picam.stop()
                     self.picam.configure(self.video_config)
                     self.picam.start()
-                except:
-                    pass
+                except Exception as e2:
+                    logger.error(f"Failed to reset camera configuration: {e2}")
                 raise
             finally:
                 if was_cycling:
@@ -327,12 +337,69 @@ class CameraManager:
                     images.append(img)
                 return images
             
-            # Normal hardware mode
-            for i in range(self.camera_count):
-                logger.info(f"Capturing from camera {i}")
-                # Use the capture_image method which now handles the broken camera 4
-                image = self.capture_image(i)
-                images.append(image)
+            # Normal hardware mode - use a single lock for the entire operation
+            with self.lock:
+                # First, switch to still config for high-res capture
+                logger.info("Switching to still config for all cameras")
+                self.picam.stop()
+                self.picam.configure(self.still_config)
+                self.picam.start()
+                
+                # Wait for camera to stabilize
+                time.sleep(0.5)
+                
+                for i in range(self.camera_count):
+                    logger.info(f"Capturing from camera {i}")
+                    
+                    # Special handling for camera 4 (index 3) which is broken
+                    if i == 3:
+                        logger.info("Creating dummy image for broken camera 4")
+                        blank_img = Image.new('RGB', (640, 480), color='black')
+                        draw = ImageDraw.Draw(blank_img)
+                        text = "Camera Disconnected"
+                        text_width = len(text) * 8
+                        text_height = 15
+                        text_x = (blank_img.width - text_width) // 2
+                        text_y = (blank_img.height - text_height) // 2
+                        draw.text((text_x, text_y), text, fill=(255, 0, 0))
+                        self._add_center_cross(blank_img)
+                        images.append(blank_img)
+                        continue
+                    
+                    # Select camera without using capture_image to avoid nested locks
+                    self.select_camera(i, already_locked=True)
+                    time.sleep(0.1)  # Brief pause after selection
+                    
+                    # Capture to a PIL Image
+                    logger.info(f"Capturing image from camera {i}")
+                    try:
+                        buffer = self.picam.capture_array()
+                        logger.info(f"Successfully captured array from camera {i}")
+                        image = Image.fromarray(buffer)
+                        logger.info(f"Successfully converted array to image for camera {i}")
+                    except Exception as e:
+                        logger.error(f"Error capturing from camera {i}: {e}")
+                        # Create a fallback image with error message
+                        image = Image.new('RGB', (640, 480), color='black')
+                        draw = ImageDraw.Draw(image)
+                        draw.text((20, 240), f"Error: {str(e)}", fill=(255, 0, 0))
+                        logger.warning(f"Created fallback error image for camera {i}")
+                    
+                    # Add red cross in the center
+                    self._add_center_cross(image)
+                    
+                    # Ensure image is in RGB mode
+                    if image.mode == 'RGBA':
+                        logger.info("Converting image from RGBA to RGB")
+                        image = image.convert('RGB')
+                    
+                    images.append(image)
+                
+                # Switch back to video config
+                logger.info("Switching back to video config")
+                self.picam.stop()
+                self.picam.configure(self.video_config)
+                self.picam.start()
             
             return images
         finally:
