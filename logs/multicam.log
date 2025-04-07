@@ -54,3 +54,353 @@
 2025-04-07 11:34:37,542 - camera_manager - INFO - Selected camera: 2
 2025-04-07 11:34:39,188 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:39] "GET /camera_info HTTP/1.1" 200 -
 2025-04-07 11:34:39,643 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:34:41,277 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:41] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:41,743 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:34:43,438 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:43] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:43,844 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:34:45,476 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:45] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:45,945 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:34:47,496 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:47] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:48,045 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:34:49,532 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:49] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:50,146 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:34:51,683 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:51] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:52,247 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:34:53,810 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:53] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:54,347 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:34:55,945 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:55] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:56,448 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:34:58,127 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:34:58] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:34:58,549 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:00,174 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:00] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:00,649 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:02,428 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:02] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:02,750 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:04,472 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:04] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:04,851 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:06,728 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:06] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:06,951 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:08,718 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:08] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:09,052 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:11,133 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:11] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:11,153 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:13,027 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:13] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:13,253 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:15,228 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:15] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:15,354 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:17,161 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:17] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:17,454 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:19,191 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:19] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:19,555 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:21,251 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:21] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:21,656 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:23,423 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:23] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:23,757 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:25,463 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:25] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:25,858 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:27,481 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:27] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:27,958 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:29,502 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:29] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:30,059 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:31,529 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:31] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:32,160 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:33,536 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:33] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:34,260 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:35,542 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:35] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:36,361 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:37,756 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:37] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:38,462 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:39,673 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:39] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:40,562 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:41,676 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:41] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:42,663 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:43,901 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:43] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:44,763 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:46,051 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:46] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:46,864 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:48,094 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:48] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:48,965 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:50,091 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:50] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:51,066 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:52,126 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:52] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:53,166 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:35:54,156 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:54] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:55,267 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:35:56,186 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:56] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:57,367 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:35:58,214 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:35:58] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:35:59,468 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:00,239 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:00] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:01,569 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:02,262 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:02] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:03,669 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:04,282 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:04] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:05,770 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:06,323 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:06] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:07,871 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:08,351 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:08] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:09,972 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:10,383 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:10] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:12,073 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:12,417 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:12] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:14,173 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:14,434 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:14] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:16,274 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:16,465 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:16] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:18,375 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:18,488 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:18] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:20,475 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:20,489 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:20] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:22,514 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:22] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:22,576 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:24,539 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:24] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:24,677 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:26,561 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:26] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:26,777 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:28,590 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:28] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:28,878 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:30,615 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:30] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:30,979 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:32,637 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:32] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:33,079 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:34,668 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:34] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:35,180 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:36,692 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:36] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:37,281 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:38,717 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:38] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:39,381 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:40,737 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:40] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:41,482 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:42,760 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:42] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:43,583 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:44,935 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:44] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:45,683 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:46,957 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:46] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:47,784 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:49,233 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:49] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:49,884 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:51,254 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:51] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:51,985 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:36:53,434 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:53] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:54,086 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:36:55,520 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:55] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:56,186 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:36:57,730 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:36:57] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:36:58,287 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:00,088 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:00] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:00,388 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:01,923 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:01] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:02,489 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:04,082 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:04] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:04,590 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:06,232 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:06] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:06,690 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:08,382 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:08] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:08,791 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:10,393 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:10] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:10,891 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:12,583 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:12] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:12,992 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:14,734 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:14] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:15,093 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:16,881 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:16] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:17,193 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:18,798 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:18] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:19,294 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:20,803 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:20] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:21,395 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:23,025 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:23] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:23,495 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:25,049 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:25] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:25,596 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:27,225 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:27] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:27,697 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:29,375 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:29] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:29,797 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:31,525 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:31] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:31,898 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:33,565 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:33] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:33,999 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:35,726 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:35] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:36,099 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:37,748 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:37] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:38,200 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:40,025 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:40] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:40,301 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:42,048 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:42] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:42,401 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:44,226 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:44] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:44,502 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:46,377 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:46] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:46,603 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:48,524 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:48] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:48,703 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:50,564 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:50] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:50,804 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:52,589 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:52] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:52,905 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:37:54,614 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:54] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:55,005 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:37:56,719 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:56] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:57,106 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:37:58,762 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:37:58] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:37:59,207 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:00,915 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:00] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:01,307 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:02,950 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:02] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:03,408 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:04,979 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:04] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:05,509 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:07,067 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:07] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:07,609 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:09,098 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:09] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:09,710 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:11,133 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:11] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:11,811 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:13,134 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:13] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:13,911 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:15,252 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:15] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:16,012 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:17,145 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:17] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:18,113 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:19,142 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:19] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:20,213 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:21,140 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:21] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:22,314 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:23,150 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:23] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:24,415 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:25,156 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:25] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:26,515 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:27,156 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:27] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:28,616 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:29,162 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:29] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:30,717 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:31,329 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:31] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:32,817 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:33,355 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:33] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:34,918 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:35,528 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:35] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:37,019 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:37,575 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:37] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:39,119 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:39,577 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:39] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:41,220 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:41,608 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:41] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:43,321 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:43,648 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:43] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:45,422 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:45,872 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:45] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:47,522 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:47,895 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:47] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:49,623 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:50,071 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:50] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:51,724 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:52,219 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:52] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:53,824 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:38:54,315 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:54] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:55,925 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:38:56,420 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:56] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:38:58,026 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:38:58,568 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:38:58] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:00,126 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:00,725 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:00] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:02,227 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:02,759 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:02] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:04,328 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:04,759 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:04] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:06,428 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:06,802 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:06] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:08,529 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:08,832 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:08] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:10,630 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:10,861 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:10] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:12,730 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:12,891 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:12] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:14,831 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:14,921 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:14] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:16,932 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:16,945 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:16] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:18,976 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:18] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:19,032 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:21,009 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:21] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:21,133 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:23,041 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:23] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:23,234 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:25,069 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:25] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:25,334 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:27,099 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:27] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:27,435 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:29,146 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:29] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:29,536 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:30,950 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:30] "GET / HTTP/1.1" 200 -
+2025-04-07 11:39:31,049 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:31] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:31,050 - multicam_app - INFO - Looking for latest capture
+2025-04-07 11:39:31,050 - multicam_app - INFO - Scanning captures folder: captures
+2025-04-07 11:39:31,050 - multicam_app - INFO - Found 0 grid files: []
+2025-04-07 11:39:31,050 - multicam_app - WARNING - No grid captures found
+2025-04-07 11:39:31,051 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:31] "[33mGET /latest_capture HTTP/1.1[0m" 404 -
+2025-04-07 11:39:31,061 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:31] "GET /video_feed HTTP/1.1" 200 -
+2025-04-07 11:39:31,636 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:33,036 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:33] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:33,253 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:33] "[33mGET /debug/captures HTTP/1.1[0m" 404 -
+2025-04-07 11:39:33,737 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:35,037 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:35] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:35,838 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:37,174 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:37] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:37,939 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:39,177 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:39] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:40,039 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:41,178 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:41] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:42,140 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:43,338 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:43] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:44,241 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:45,420 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:45] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:46,341 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:47,419 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:47] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:48,442 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:49,442 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:49] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:50,543 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:51,449 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:51] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:52,643 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:53,461 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:53] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:54,744 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:39:55,451 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:55] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:56,845 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:39:57,467 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:57] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:39:58,945 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:39:59,548 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:39:59] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:01,046 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:40:01,504 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:01] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:03,147 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:40:03,605 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:03] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:05,247 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:40:05,684 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:05] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:07,348 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:40:07,825 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:07] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:09,448 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:40:09,822 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:09] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:11,549 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:40:11,833 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:11] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:13,650 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:40:13,854 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:13] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:15,750 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:40:15,855 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:15] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:17,851 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:40:17,866 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:17] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:19,868 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:19] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:19,952 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:40:21,964 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:21] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:22,053 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:40:24,062 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:24] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:24,153 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:40:26,159 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:26] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:26,254 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:40:28,172 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:28] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:28,355 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:40:30,195 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:30] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:30,456 - camera_manager - INFO - Selected camera: 2
+2025-04-07 11:40:32,249 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:32] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:32,556 - camera_manager - INFO - Selected camera: 0
+2025-04-07 11:40:34,253 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:34] "GET /camera_info HTTP/1.1" 200 -
+2025-04-07 11:40:34,657 - camera_manager - INFO - Selected camera: 1
+2025-04-07 11:40:36,281 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 11:40:36] "GET /camera_info HTTP/1.1" 200 -
