@@ -1,14 +1,4 @@
-    @pytest.fixture(autouse=True)
-    def stop_any_camera_cycles(self):
-        """Ensure any camera cycles are stopped after each test."""
-        yield
-        # After each test, force cleanup of any CameraManager instances that might still be running
-        for obj in list(gc.get_objects()):
-            if isinstance(obj, CameraManager):
-                try:
-                    obj.cleanup()
-                except:
-                    pass"""
+"""
 Tests for the CameraManager class
 """
 import pytest
