@@ -169,13 +169,23 @@ class CameraManager:
         
         def cycle_cameras():
             camera_idx = 0
-            while self.is_cycling:
-                self.select_camera(camera_idx)
-                time.sleep(self.cycle_interval)
-                # Skip to next camera, skipping index 3 which is broken
-                camera_idx = (camera_idx + 1) % self.camera_count
-                if camera_idx == 3:  # Skip the broken camera
-                    camera_idx = 0
+            # Local reference to is_cycling to avoid race conditions
+            local_is_cycling = self.is_cycling
+            while local_is_cycling:
+                try:
+                    self.select_camera(camera_idx)
+                    time.sleep(self.cycle_interval)
+                    # Skip to next camera, skipping index 3 which is broken
+                    camera_idx = (camera_idx + 1) % self.camera_count
+                    if camera_idx == 3:  # Skip the broken camera
+                        camera_idx = 0
+                    # Update local reference to is_cycling
+                    local_is_cycling = self.is_cycling
+                except Exception as e:
+                    # If we encounter an error, log it but keep going
+                    if self.is_cycling:  # Only log if we're still cycling
+                        logger.error(f"Error during camera cycling: {e}")
+                    break
         
         self.cycle_thread = threading.Thread(target=cycle_cameras)
         self.cycle_thread.daemon = True
@@ -184,10 +194,18 @@ class CameraManager:
     
     def stop_camera_cycle(self):
         """Stop cycling through cameras."""
+        # Set flag first to signal thread to stop
         self.is_cycling = False
-        if self.cycle_thread:
-            self.cycle_thread.join(timeout=2.0)
-            self.cycle_thread = None
+        
+        # Safely join the thread
+        if self.cycle_thread and self.cycle_thread.is_alive():
+            try:
+                self.cycle_thread.join(timeout=2.0)
+            except Exception as e:
+                logger.warning(f"Error joining cycle thread: {e}")
+            finally:
+                self.cycle_thread = None
+                
         logger.info("Stopped camera cycling")
     
     def capture_image(self, camera_index=None):
@@ -390,11 +408,23 @@ class CameraManager:
     
     def cleanup(self):
         """Clean up resources."""
-        if self.is_cycling:
-            self.stop_camera_cycle()
-            
-        if self.picam and not self.test_mode:
-            self.picam.stop()
-            
-        if hasattr(self, 'bus') and self.bus and not self.test_mode:
-            self.bus.close()
+        try:
+            # Always stop cycling first
+            if self.is_cycling:
+                self.stop_camera_cycle()
+                
+            # Handle real hardware cleanup when not in test mode
+            if not self.test_mode:
+                if hasattr(self, 'picam') and self.picam:
+                    try:
+                        self.picam.stop()
+                    except Exception as e:
+                        logger.warning(f"Error stopping picam: {e}")
+                    
+                if hasattr(self, 'bus') and self.bus:
+                    try:
+                        self.bus.close()
+                    except Exception as e:
+                        logger.warning(f"Error closing bus: {e}")
+        except Exception as e:
+            logger.error(f"Error during cleanup: {e}")

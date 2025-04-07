@@ -5,8 +5,35 @@ import os
 import pytest
 import shutil
 import tempfile
+import logging
 from unittest.mock import patch, MagicMock
 from PIL import Image
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_logging():
+    """Clean up logging handlers to prevent I/O errors."""
+    # Setup - configure logging to use only stream handlers
+    root_logger = logging.getLogger()
+    
+    # Store original handlers
+    original_handlers = list(root_logger.handlers)
+    
+    # Replace with a single stream handler
+    for handler in original_handlers:
+        if not isinstance(handler, logging.StreamHandler):
+            root_logger.removeHandler(handler)
+    
+    # Make sure we have at least one stream handler
+    if not root_logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+        root_logger.addHandler(handler)
+    
+    # Let the test run
+    yield
+    
+    # Teardown - restore original handlers
+    # This should happen at the very end of all tests
 
 # Import the application modules we'll test
 import cam
