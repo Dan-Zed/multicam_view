@@ -18,7 +18,16 @@ app.config['CAPTURE_FOLDER'] = 'captures'
 
 # Create captures directory if it doesn't exist
 if not os.path.exists(app.config['CAPTURE_FOLDER']):
+    logger.info(f"Creating captures directory: {app.config['CAPTURE_FOLDER']}")
     os.makedirs(app.config['CAPTURE_FOLDER'])
+    # Ensure directory is accessible
+    try:
+        os.chmod(app.config['CAPTURE_FOLDER'], 0o755)
+        logger.info(f"Set permissions on captures directory")
+    except Exception as e:
+        logger.warning(f"Could not set permissions on captures directory: {e}")
+else:
+    logger.info(f"Captures directory exists: {app.config['CAPTURE_FOLDER']}")
 
 # Initialize camera manager
 try:
@@ -103,28 +112,46 @@ def video_feed():
 def capture():
     """Capture images from all cameras."""
     if not camera_manager:
+        logger.error("Cannot capture: camera manager not initialized")
         return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
         
     try:
+        logger.info("Starting capture from all cameras")
         n = get_next_capture_number()
+        logger.info(f"Using capture number {n}")
         
         # Capture from all cameras
+        logger.info("Capturing images from all cameras")
         images = camera_manager.capture_all_cameras()
+        logger.info(f"Successfully captured {len(images)} images")
         
         # Save individual images
         filenames = []
         for i, img in enumerate(images):
             filename = f'capture_{n}_cam{i}.jpg'
             filepath = os.path.join(app.config['CAPTURE_FOLDER'], filename)
+            logger.info(f"Saving image from camera {i} to {filepath}")
             img.save(filepath)
+            # Ensure file permissions
+            try:
+                os.chmod(filepath, 0o644)
+            except Exception as e:
+                logger.warning(f"Could not set permissions on {filepath}: {e}")
             filenames.append(filename)
             logger.info(f"Saved capture from camera {i} to {filepath}")
         
         # Create and save combined grid image
+        logger.info("Creating grid image")
         grid_img = camera_manager.create_grid_image(images)
         grid_filename = f'capture_{n}_grid.jpg'
         grid_filepath = os.path.join(app.config['CAPTURE_FOLDER'], grid_filename)
+        logger.info(f"Saving grid image to {grid_filepath}")
         grid_img.save(grid_filepath)
+        # Ensure file permissions
+        try:
+            os.chmod(grid_filepath, 0o644)
+        except Exception as e:
+            logger.warning(f"Could not set permissions on {grid_filepath}: {e}")
         logger.info(f"Saved combined grid image to {grid_filepath}")
         
         return jsonify({
@@ -134,31 +161,44 @@ def capture():
         })
         
     except Exception as e:
-        logger.error(f"Error during capture: {e}")
+        logger.error(f"Error during capture: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/latest_capture')
 def latest_capture():
     """Get the latest capture's grid image filename."""
     try:
-        grid_files = [f for f in os.listdir(app.config['CAPTURE_FOLDER']) 
+        logger.info("Looking for latest capture")
+        captures_folder = app.config['CAPTURE_FOLDER']
+        logger.info(f"Scanning captures folder: {captures_folder}")
+        
+        grid_files = [f for f in os.listdir(captures_folder) 
                      if f.startswith('capture_') and f.endswith('_grid.jpg')]
         
+        logger.info(f"Found {len(grid_files)} grid files: {grid_files}")
+        
         if not grid_files:
+            logger.warning("No grid captures found")
             return jsonify({'success': False, 'error': 'No captures found'}), 404
             
         # Get the latest grid file based on capture number
         latest = max(grid_files, key=lambda x: int(x.split('_')[1]))
+        logger.info(f"Latest grid capture: {latest}")
         
         return jsonify({'success': True, 'filename': latest})
     except Exception as e:
-        logger.error(f"Error getting latest capture: {e}")
+        logger.error(f"Error getting latest capture: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/captures/<path:filename>')
 def serve_capture(filename):
     """Serve capture images."""
-    return send_from_directory(app.config['CAPTURE_FOLDER'], filename)
+    logger.info(f"Request to serve capture file: {filename}")
+    try:
+        return send_from_directory(app.config['CAPTURE_FOLDER'], filename)
+    except Exception as e:
+        logger.error(f"Error serving capture file {filename}: {e}")
+        return jsonify({'error': 'File not found'}), 404
 
 @app.route('/camera_info')
 def camera_info():

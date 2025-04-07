@@ -197,7 +197,22 @@ class CameraManager:
                 if camera_index is not None:
                     self.select_camera(camera_index)
                 
+                # Special handling for camera 4 (index 3)
+                if camera_index == 3 or self.current_camera == 3:
+                    logger.info("Creating dummy image for broken camera 4")
+                    blank_img = Image.new('RGB', (640, 480), color='black')
+                    draw = ImageDraw.Draw(blank_img)
+                    text = "Camera Disconnected"
+                    text_width = len(text) * 8
+                    text_height = 15
+                    text_x = (blank_img.width - text_width) // 2
+                    text_y = (blank_img.height - text_height) // 2
+                    draw.text((text_x, text_y), text, fill=(255, 0, 0))
+                    self._add_center_cross(blank_img)
+                    return blank_img
+                
                 # Switch to still config for high-res capture
+                logger.info(f"Switching to still config for camera {camera_index if camera_index is not None else self.current_camera}")
                 self.picam.stop()
                 self.picam.configure(self.still_config)
                 self.picam.start()
@@ -206,6 +221,7 @@ class CameraManager:
                 time.sleep(0.5)
                 
                 # Capture to a PIL Image
+                logger.info("Capturing image")
                 buffer = self.picam.capture_array()
                 image = Image.fromarray(buffer)
                 
@@ -213,9 +229,15 @@ class CameraManager:
                 self._add_center_cross(image)
                 
                 # Switch back to video config
+                logger.info("Switching back to video config")
                 self.picam.stop()
                 self.picam.configure(self.video_config)
                 self.picam.start()
+                
+                # Ensure image is in RGB mode
+                if image.mode == 'RGBA':
+                    logger.info("Converting image from RGBA to RGB")
+                    image = image.convert('RGB')
                 
                 return image
                 
@@ -242,6 +264,7 @@ class CameraManager:
         list
             List of captured images (PIL.Image)
         """
+        logger.info("Starting to capture from all cameras")
         was_cycling = self.is_cycling
         if was_cycling:
             self.stop_camera_cycle()
@@ -250,25 +273,10 @@ class CameraManager:
         
         try:
             for i in range(self.camera_count):
-                if i == 3:  # Special handling for broken camera 4 (index 3)
-                    logger.warning(f"Skipping capture from broken camera 4 (index 3)")
-                    # Create a blank image with "Camera Disconnected" text
-                    blank_img = Image.new('RGB', (640, 480), color='black')
-                    draw = ImageDraw.Draw(blank_img)
-                    # Use center coordinates but no anchor (older PIL versions might not have it)
-                    text = "Camera Disconnected"
-                    # Get approximate text size (this is very rough)
-                    text_width = len(text) * 8
-                    text_height = 15
-                    text_x = (blank_img.width - text_width) // 2
-                    text_y = (blank_img.height - text_height) // 2
-                    draw.text((text_x, text_y), text, fill=(255, 0, 0))
-                    self._add_center_cross(blank_img)
-                    images.append(blank_img)
-                else:
-                    logger.info(f"Capturing from camera {i}")
-                    image = self.capture_image(i)
-                    images.append(image)
+                logger.info(f"Capturing from camera {i}")
+                # Use the capture_image method which now handles the broken camera 4
+                image = self.capture_image(i)
+                images.append(image)
             
             return images
         finally:
@@ -292,18 +300,33 @@ class CameraManager:
         if len(images) != 4:
             raise ValueError(f"Expected 4 images, got {len(images)}")
         
+        logger.info(f"Creating grid image from {len(images)} images")
+        
+        # Make sure all images are in RGB mode
+        rgb_images = []
+        for i, img in enumerate(images):
+            if img.mode == 'RGBA':
+                logger.info(f"Converting image {i} from RGBA to RGB")
+                rgb_images.append(img.convert('RGB'))
+            else:
+                rgb_images.append(img)
+        
         # Use the first image's size for calculations
-        width, height = images[0].size
+        width, height = rgb_images[0].size
+        logger.info(f"Image dimensions: {width}x{height}")
         
         # Create a new image with 2x2 grid layout
+        logger.info(f"Creating new grid image with dimensions {width*2}x{height*2}")
         grid_image = Image.new('RGB', (width * 2, height * 2))
         
         # Paste images into grid
-        grid_image.paste(images[0], (0, 0))
-        grid_image.paste(images[1], (width, 0))
-        grid_image.paste(images[2], (0, height))
-        grid_image.paste(images[3], (width, height))
+        logger.info("Pasting images into grid")
+        grid_image.paste(rgb_images[0], (0, 0))
+        grid_image.paste(rgb_images[1], (width, 0))
+        grid_image.paste(rgb_images[2], (0, height))
+        grid_image.paste(rgb_images[3], (width, height))
         
+        logger.info("Grid image created successfully")
         return grid_image
     
     def _add_center_cross(self, image):

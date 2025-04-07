@@ -393,15 +393,20 @@
             const statusEl = document.getElementById('captureStatus');
             const btn = document.querySelector('.btn');
             btn.disabled = true;
+            statusEl.style.display = 'block';
             
             try {
+                console.log('Starting image capture...');
                 statusEl.textContent = 'Capturing images from all cameras...';
                 statusEl.className = 'status success';
                 
                 const response = await fetch('/capture');
+                console.log('Capture response:', response);
                 const data = await response.json();
+                console.log('Capture data:', data);
                 
                 if (data.success) {
+                    console.log('Successfully captured images, updating preview...');
                     updateLastCapture();
                     statusEl.textContent = 'Images captured successfully!';
                     setTimeout(() => {
@@ -411,6 +416,7 @@
                     throw new Error(data.error);
                 }
             } catch (error) {
+                console.error('Error capturing images:', error);
                 statusEl.textContent = 'Error capturing images: ' + error.message;
                 statusEl.className = 'status error';
             } finally {
@@ -421,12 +427,18 @@
         // Update the last capture preview
         async function updateLastCapture() {
             try {
+                console.log('Fetching latest capture...');
                 const response = await fetch('/latest_capture');
+                console.log('Latest capture response:', response);
                 const data = await response.json();
+                console.log('Latest capture data:', data);
                 
                 if (data.success) {
                     const img = document.getElementById('lastCapture');
+                    console.log('Setting image source to:', `/captures/${data.filename}?t=${Date.now()}`);
                     img.src = `/captures/${data.filename}?t=${Date.now()}`;
+                } else {
+                    console.warn('No captures found or error getting latest capture');
                 }
             } catch (error) {
                 console.error('Error updating last capture:', error);
