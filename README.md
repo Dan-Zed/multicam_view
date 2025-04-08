@@ -7,44 +7,38 @@ A web application for controlling and streaming from multiple cameras connected 
 - Live stream from multiple cameras via a web interface
 - Capture high-resolution images (4056x3040) from each camera
 - Switch between cameras in real-time
-- Automatic camera cycling at configurable intervals
+- View all cameras simultaneously in four-in-one mode
 - Create combined 2x2 grid views from all cameras
 - Center crosshairs on all camera views for alignment
 - Debug interface for troubleshooting
+- Robust error handling and memory management
 
 ## Hardware Requirements
 
 - Raspberry Pi 5
 - Arducam camarray HAT with IMX519 sensors
-- Four cameras connected to the multiplexer (supports three functional cameras in current config)
+- Four cameras connected to the multiplexer
 
-## Installation
+## Run
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/multicam_view.git
-   cd multicam_view
-   ```
+```
+poetry run python run.py
+```
 
-2. Install dependencies with Poetry:
-   ```
-   poetry install
-   ```
+## Configuration
 
-3. Run the application:
-   ```
-   ./start.sh
-   ```
+The application uses configuration dictionaries to manage settings:
 
-4. Access the web interface at:
-   ```
-   http://[raspberry-pi-ip]:8000/
-   ```
+- Camera settings in `camera_manager.py`:
+  - I2C bus and multiplexer address
+  - Camera count and switch delay
+  - Video and still resolution
+  - Stabilization delay
 
-5. For debugging and troubleshooting, access the debug interface:
-   ```
-   http://[raspberry-pi-ip]:8000/debug
-   ```
+- Application settings in `cam.py`:
+  - Frame rate and cycle interval
+  - Directory and file permissions
+  - Error handling parameters
 
 ## Development and Testing
 
@@ -64,6 +58,8 @@ Alternatively, you can run individual tests with Poetry:
 poetry run python test_camera.py  # Test camera functionality
 poetry run python test_capture.py  # Test capture functionality
 ```
+
+The application includes a test mode that can be enabled to simulate camera operations without requiring actual hardware.
 
 ## Troubleshooting
 
@@ -85,23 +81,22 @@ If camera capture isn't working:
    - "Test Captures Dir" to check directory permissions
    - "Test Capture API" to verify single camera capture
    - "Test Full Pipeline" to test the entire capture process
+3. Check the log file (`multicam.log`) for detailed error information
 
-### Camera Configuration
+### Memory Issues
 
-The system is configured for:
-- Low-resolution (640x480) streaming for the live view
-- High-resolution (4056x3040) capture when taking photos
-- Camera 4 (index 3) is marked as broken in the current configuration
+The application now includes explicit memory management with garbage collection at critical points. If you experience memory-related issues:
+
+1. Review the memory usage reported in the logs during captures
+2. Ensure the system has sufficient free memory
+3. Consider reducing the capture resolution in the CONFIG settings
 
 ## Project Structure
 
-- `camera_manager.py`: Core camera control functionality
-- `cam.py`: Flask web application routes
+- `camera_manager.py`: Core camera control functionality with memory management
+- `cam.py`: Flask web application routes and endpoints
 - `run.py`: Application startup script
 - `templates/`: HTML templates for the web interface
-- `docs/`: Project documentation and progress reports
-- `test_*.py`: Test scripts for different components
-
-## License
-
-MIT License
+- `docs/`: Project documentation and architecture details
+- `captures/`: Directory for saved images
+- `logs/`: Directory for log files

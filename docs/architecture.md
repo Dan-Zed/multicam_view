@@ -27,7 +27,26 @@ The Camera Manager is the core component that handles all camera operations. It 
 - Handle camera configuration (video vs still modes)
 - Capture images from cameras
 - Create combined grid images
-- Manage camera cycling
+- Manage four-in-one preview mode
+- Handle memory management and garbage collection
+- Provide robust error handling
+
+#### Configuration:
+
+The Camera Manager uses a centralized configuration dictionary:
+
+```python
+CONFIG = {
+    "I2C_BUS": 11,
+    "MUX_ADDR": 0x24,
+    "CAMERA_COUNT": 4,
+    "SWITCH_DELAY": 0.5,
+    "STABILIZATION_DELAY": 1.0,
+    "VIDEO_RESOLUTION": (1280, 720),
+    "STILL_RESOLUTION": (4056, 3040),
+    "CYCLE_INTERVAL": 1.0,
+}
+```
 
 #### Important Classes and Methods:
 
@@ -41,6 +60,8 @@ CameraManager
 ├── capture_image(camera_index)
 ├── capture_all_cameras()
 ├── create_grid_image(images)
+├── _draw_cross_at(image, x, y, size)
+├── _add_center_cross(image)
 └── cleanup()
 ```
 
@@ -52,9 +73,29 @@ The Camera Manager uses a threading.Lock to ensure thread-safe access to the cam
 - Prevention of nested locks with the `already_locked` parameter
 - Single lock acquisition for multi-camera operations
 
+#### Memory Management:
+
+The Camera Manager now includes explicit memory management:
+- Garbage collection (`gc.collect()`) before and after memory-intensive operations
+- Explicit deletion of large buffers after use
+- Cleanup in error handling paths
+
 ### 2. Web Application (`cam.py`)
 
 The web application is built using Flask and provides HTTP endpoints for browser-based control of the camera system.
+
+#### Application Configuration:
+
+```python
+APP_CONFIG = {
+    "FRAME_RATE_SLEEP": 0.1,  # 10 fps
+    "FRAME_FREEZE_THRESHOLD": 5.0,  # seconds to detect camera freeze
+    "ERROR_SLEEP": 1.0,  # sleep time after error
+    "CYCLE_INTERVAL": 2.0,  # seconds between camera cycling
+    "DIR_PERMISSIONS": 0o755,  # directory permissions
+    "FILE_PERMISSIONS": 0o644,  # file permissions
+}
+```
 
 #### Key Routes:
 
@@ -66,12 +107,20 @@ The web application is built using Flask and provides HTTP endpoints for browser
 - `/captures/<filename>`: Serves captured images
 - `/camera_info`: Returns information about the current camera setup
 - `/select_camera/<camera_id>`: Endpoint to manually select a camera
-- `/toggle_cycle`: Toggles automatic camera cycling
+- `/toggle_cycle`: Toggles four-in-one preview mode
 - `/debug/*`: Various debug endpoints for testing and diagnostics
 
 #### HTTP Endpoints Pattern:
 
 The application follows a RESTful design pattern, with endpoints returning JSON responses for API calls and HTML for browser interfaces.
+
+#### Error Handling:
+
+The application implements comprehensive error handling:
+- Try/except blocks with detailed logging
+- Fallback responses when operations fail
+- User-friendly error messages
+- Diagnostic information in debug mode
 
 ### 3. Web Interface (`templates/`)
 
@@ -95,7 +144,8 @@ The web interface includes JavaScript for:
 
 The main entry point for the application, responsible for:
 - Configuring logging
-- Creating the captures directory if it doesn't exist
+- Creating required directories (captures and logs)
+- Setting appropriate permissions
 - Starting the Flask web server
 
 ## Data Flow
@@ -104,7 +154,7 @@ The main entry point for the application, responsible for:
 
 1. Web browser connects to `/video_feed` endpoint
 2. The `gen_frames()` function:
-   - Captures frames from the camera in four-in-one mode
+   - Captures frames from the camera
    - Adds camera information and center crosshairs
    - Converts to JPEG format
    - Yields frames as an MJPEG stream
@@ -116,11 +166,12 @@ The main entry point for the application, responsible for:
 2. JavaScript makes AJAX request to `/capture` endpoint
 3. Server calls `camera_manager.capture_all_cameras()`
 4. Camera Manager:
-   - Stops camera cycling if active
+   - Stops four-in-one mode if active
    - Switches to still configuration
+   - Performs garbage collection for memory management
    - Captures images from each camera
    - Switches back to video configuration
-   - Restarts cycling if it was active
+   - Restarts four-in-one mode if it was active
 5. Server saves individual images and creates grid image
 6. Server returns success/failure JSON response
 7. JavaScript updates UI with the new grid image
@@ -133,12 +184,13 @@ The Camera Manager follows the resource manager pattern, with proper initializat
 - Acquisition of resources in `__init__`
 - Release of resources in `cleanup()`
 - Context managers for thread locks
+- Explicit memory management with garbage collection
 
 ### 2. Observer Pattern
 
 The web interface observes camera state through periodic polling:
 - JavaScript polls `/camera_info` endpoint
-- UI updates to reflect current camera state (four-in-one mode or single camera)
+- UI updates to reflect current camera state
 - Camera state changes independently of UI observation
 
 ### 3. Factory Pattern
@@ -147,12 +199,12 @@ The Camera Manager creates different types of configurations:
 - Video configuration for streaming (720p with continuous autofocus)
 - Still configuration for high-resolution capture (4056x3040 with one-time autofocus)
 
-### 4. State Pattern
+### 4. Strategy Pattern
 
-The camera system has different states:
-- Four-in-one preview mode (showing all cameras)
-- Individual camera selected
-- Capturing high-resolution images
+The application uses different strategies for error handling:
+- Creating fallback images when camera operations fail
+- Degrading gracefully when some operations succeed and others fail
+- Retrying critical operations
 
 ## Thread Management
 
@@ -174,9 +226,10 @@ The application implements a multi-layered error handling approach:
 ### Error Recovery Strategies:
 
 - Automatic return to video mode if still capture fails
-- Creation of placeholder images for broken cameras
+- Creation of placeholder images for cameras that fail to capture
 - Graceful degradation when some but not all cameras fail
 - Detailed logging for post-mortem debugging
+- Memory cleanup during error handling
 
 ## Configuration Management
 
@@ -187,7 +240,7 @@ The application implements a multi-layered error handling approach:
 
 ### Camera Multiplexer Commands:
 
-```
+```python
 CAMERA_COMMANDS = {
     0: 0x02,    # Select single channel 0
     1: 0x12,    # Select single channel 1
@@ -197,12 +250,24 @@ CAMERA_COMMANDS = {
 }
 ```
 
+## Memory Management
+
+The application includes robust memory management:
+
+1. **Explicit Garbage Collection**:
+   - Before and after memory-intensive operations
+   - During error handling
+   - In regular intervals during frame generation
+
+2. **Buffer Management**:
+   - Immediate deletion of large image buffers after use
+   - Conversion to optimized formats when appropriate
+
+3. **Memory Monitoring**:
+   - Tracking memory usage before and after capture operations
+   - Logging memory changes for diagnostic purposes
+
 ## Testing
-
-### Test Scripts:
-
-- `test_camera.py`: Tests camera selection, capture, and grid creation
-- `test_capture.py`: Tests capture and save functionality
 
 ### Test Mode:
 
@@ -211,13 +276,19 @@ The Camera Manager supports a `test_mode` parameter that allows testing without 
 - Simulated image capture
 - No actual hardware communication
 
+### Test Scripts:
+
+- `test_camera.py`: Tests camera selection, capture, and grid creation
+- `test_capture.py`: Tests capture and save functionality
+
 ## Performance Considerations
 
 ### Image Processing:
 
-- Camera switching has a configurable delay (`switch_delay`)
-- High-resolution capture includes a stabilization delay
+- Camera switching has a configurable delay (`SWITCH_DELAY`)
+- High-resolution capture includes a stabilization delay (`STABILIZATION_DELAY`)
 - Grid image creation operates on in-memory images
+- Garbage collection at strategic points to manage memory usage
 
 ### Web Interface:
 
@@ -251,19 +322,17 @@ The Camera Manager supports a `test_mode` parameter that allows testing without 
 
 ```
 multicam_view/
-├── camera_manager.py   # Camera control functionality
-├── cam.py              # Flask application
+├── camera_manager.py   # Camera control functionality with CONFIG
+├── cam.py              # Flask application with APP_CONFIG
 ├── run.py              # Application entry point
-├── test_camera.py      # Camera test script
-├── test_capture.py     # Capture test script
 ├── templates/          # HTML templates
 │   ├── index.html      # Main interface
 │   └── debug_index.html # Debug interface
 ├── captures/           # Directory for saved images
-├── test_images/        # Directory for test images
+├── logs/               # Directory for log files
 └── docs/               # Documentation
     ├── architecture.md # This document
-    └── progress_*.md   # Progress reports
+    └── cleanup_plan.md # Cleanup plan
 ```
 
 ## Customization and Extension
@@ -277,26 +346,31 @@ multicam_view/
 
 ### Modifying Camera Configurations:
 
-Camera configurations can be modified in `camera_manager.py`:
+Camera configurations can be modified in the CONFIG dictionary:
 ```python
-self.video_config = self.picam.create_video_configuration(
-    main={"size": (1280, 720)},  # Adjust resolution here
-    controls={"AfMode": controls.AfModeEnum.Continuous}  # Autofocus settings
-)
-
-self.still_config = self.picam.create_still_configuration(
-    main={"size": (4056, 3040)},  # Adjust resolution here
-    controls={"AfMode": controls.AfModeEnum.Auto}  # Autofocus settings
-)
+CONFIG = {
+    # Basic settings
+    "I2C_BUS": 11,
+    "MUX_ADDR": 0x24,
+    "CAMERA_COUNT": 4,
+    "SWITCH_DELAY": 0.5,
+    
+    # Video and still resolutions
+    "VIDEO_RESOLUTION": (1280, 720),
+    "STILL_RESOLUTION": (4056, 3040),
+    
+    # Other settings
+    "STABILIZATION_DELAY": 1.0,
+    "CYCLE_INTERVAL": 1.0,
+}
 ```
 
 ## Known Limitations
 
-1. Camera 4 (index 3) is marked as broken in the current configuration
-2. No support for camera parameter adjustments through the UI
-3. No authentication mechanism for secure access
-4. Limited error recovery for hardware failures
-5. Not designed for high-framerate video streaming
+1. No support for camera parameter adjustments through the UI
+2. No authentication mechanism for secure access
+3. Limited error recovery for hardware failures
+4. Not designed for high-framerate video streaming
 
 ## Troubleshooting Guide
 
@@ -312,11 +386,12 @@ self.still_config = self.picam.create_still_configuration(
 
 3. **Capture fails**:
    - May be a timing issue
-   - Solution: Use the debug interface to test each component separately
+   - Solution: Increase the STABILIZATION_DELAY in CONFIG
 
-4. **Slow performance**:
-   - High-resolution captures take time
-   - Solution: Reduce capture resolution in camera configurations
+4. **Memory leaks or high usage**:
+   - Check logs for memory usage patterns
+   - Consider decreasing capture resolution
+   - Ensure garbage collection is working correctly
 
 ## Appendix: I2C Communication
 
