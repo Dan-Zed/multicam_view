@@ -415,6 +415,7 @@
         async function captureImages() {
             const statusEl = document.getElementById('captureStatus');
             const btn = document.querySelector('.btn');
+            const lastCaptureImg = document.getElementById('lastCapture');
             btn.disabled = true;
             statusEl.style.display = 'block';
             
@@ -423,34 +424,37 @@
                 statusEl.textContent = 'Capturing images from all cameras...';
                 statusEl.className = 'status success';
                 
-                // First check the captures directory
-                console.log('Checking captures directory...');
-                const debugResponse = await fetch('/debug/captures');
-                const debugData = await debugResponse.json();
-                console.log('Captures directory:', debugData);
-                
-                // Now try the test capture
-                console.log('Trying test capture...');
-                const testResponse = await fetch('/debug/test_capture');
-                const testData = await testResponse.json();
-                console.log('Test capture result:', testData);
-                
-                // Now try the full capture
-                console.log('Starting full capture process...');
+                // Go straight to the full capture without debug endpoints
+                console.log('Starting capture process...');
                 const response = await fetch('/capture');
-                console.log('Capture response:', response);
+                console.log('Capture response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 console.log('Capture data:', data);
                 
                 if (data.success) {
-                    console.log('Successfully captured images, updating preview...');
-                    await updateLastCapture();
+                    console.log('Successfully captured images!');
+                    
+                    // If we have a grid filename, update the last capture image directly
+                    if (data.grid_filename) {
+                        console.log(`Setting image to: /captures/${data.grid_filename}`);
+                        // Add timestamp to prevent caching
+                        lastCaptureImg.src = `/captures/${data.grid_filename}?t=${Date.now()}`;
+                    } else {
+                        // Fall back to fetching latest capture
+                        await updateLastCapture();
+                    }
+                    
                     statusEl.textContent = 'Images captured successfully!';
                     setTimeout(() => {
                         statusEl.style.display = 'none';
                     }, 3000);
                 } else {
-                    throw new Error(data.error);
+                    throw new Error(data.error || 'Unknown error during capture');
                 }
             } catch (error) {
                 console.error('Error capturing images:', error);
@@ -466,14 +470,31 @@
             try {
                 console.log('Fetching latest capture...');
                 const response = await fetch('/latest_capture');
-                console.log('Latest capture response:', response);
+                console.log('Latest capture response status:', response.status);
+                
+                if (!response.ok) {
+                    console.warn(`Latest capture request failed: ${response.status} ${response.statusText}`);
+                    return;
+                }
+                
                 const data = await response.json();
                 console.log('Latest capture data:', data);
                 
-                if (data.success) {
+                if (data.success && data.filename) {
                     const img = document.getElementById('lastCapture');
-                    console.log('Setting image source to:', `/captures/${data.filename}?t=${Date.now()}`);
-                    img.src = `/captures/${data.filename}?t=${Date.now()}`;
+                    const newSrc = `/captures/${data.filename}?t=${Date.now()}`;
+                    console.log('Setting image source to:', newSrc);
+                    
+                    // Set onload handler before setting src to ensure we know when image loads
+                    img.onload = () => {
+                        console.log('Image loaded successfully');
+                    };
+                    
+                    img.onerror = (e) => {
+                        console.error('Error loading capture image:', e);
+                    };
+                    
+                    img.src = newSrc;
                 } else {
                     console.warn('No captures found or error getting latest capture');
                 }

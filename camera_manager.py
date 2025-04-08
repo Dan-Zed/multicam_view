@@ -317,6 +317,7 @@ class CameraManager:
                 self.picam.start()
                 
                 # Wait for camera to stabilize and focus
+                logger.info("Waiting for camera to stabilize (1.0s)")
                 time.sleep(1.0)  # Longer delay to ensure proper focusing
                 
                 for i in range(self.camera_count):
@@ -326,19 +327,30 @@ class CameraManager:
                     
                     # Select camera without using capture_image to avoid nested locks
                     self.select_camera(i, already_locked=True)
-                    time.sleep(0.1)  # Brief pause after selection
+                    logger.info(f"Camera {i} selected, waiting for stabilization (0.5s)")
+                    time.sleep(0.5)  # Increased delay after selection for better stabilization
                     
                     # Capture to a PIL Image
                     logger.info(f"Capturing image from camera {i}")
                     try:
+                        # Add garbage collection before capture to free memory
+                        import gc
+                        gc.collect()
+                        
+                        # Capture the image
+                        logger.info(f"Calling capture_array() for camera {i}")
                         buffer = self.picam.capture_array()
-                        logger.info(f"Successfully captured array from camera {i}")
+                        logger.info(f"Successfully captured array from camera {i} with shape: {buffer.shape}")
+                        
+                        # Convert to PIL Image
                         image = Image.fromarray(buffer)
+                        logger.info(f"Successfully converted array to image for camera {i} with size: {image.size}")
+                        
                         # Clean up large buffer immediately
                         del buffer
-                        logger.info(f"Successfully converted array to image for camera {i}")
+                        gc.collect()
                     except Exception as e:
-                        logger.error(f"Error capturing from camera {i}: {e}")
+                        logger.error(f"Error capturing from camera {i}: {e}", exc_info=True)
                         # Create a fallback image with error message
                         image = Image.new('RGB', (640, 480), color='black')
                         draw = ImageDraw.Draw(image)
@@ -350,10 +362,11 @@ class CameraManager:
                     
                     # Ensure image is in RGB mode
                     if image.mode == 'RGBA':
-                        logger.info("Converting image from RGBA to RGB")
+                        logger.info(f"Converting image from camera {i} from RGBA to RGB")
                         image = image.convert('RGB')
                     
                     images.append(image)
+                    logger.info(f"Successfully added image from camera {i} to images list")
                 
                 # Switch back to video config (includes continuous autofocus)
                 logger.info("Switching back to video config")
@@ -361,9 +374,23 @@ class CameraManager:
                 self.picam.configure(self.video_config)
                 self.picam.start()
             
+            logger.info(f"Successfully captured {len(images)} images")
+            return images
+        except Exception as e:
+            logger.error(f"Unexpected error in capture_all_cameras: {e}", exc_info=True)
+            # If we have an exception, try to return any images we've captured so far
+            if not images:
+                # If no images captured, create at least one error image for display
+                error_img = Image.new('RGB', (640, 480), color='black')
+                draw = ImageDraw.Draw(error_img)
+                draw.text((20, 240), f"Capture error: {str(e)}", fill=(255, 0, 0))
+                for i in range(self.camera_count):
+                    images.append(error_img.copy())
             return images
         finally:
+            # Make absolutely sure we go back to cycling if it was active before
             if was_cycling:
+                logger.info("Restoring cycling mode after capture")
                 self.start_camera_cycle(self.cycle_interval)
     
     def create_grid_image(self, images):
@@ -385,36 +412,67 @@ class CameraManager:
         
         logger.info(f"Creating grid image from {len(images)} images")
         
-        # Make sure all images are in RGB mode
+        # Make sure all images are in RGB mode and same size
         rgb_images = []
         for i, img in enumerate(images):
+            logger.info(f"Processing image {i} with mode {img.mode} and size {img.size}")
             
+            # Convert to RGB if needed
             if img.mode == 'RGBA':
                 logger.info(f"Converting image {i} from RGBA to RGB")
-                rgb_images.append(img.convert('RGB'))
-            else:
-                rgb_images.append(img)
+                img = img.convert('RGB')
+            elif img.mode != 'RGB':
+                logger.info(f"Converting image {i} from {img.mode} to RGB")
+                img = img.convert('RGB')
+            
+            rgb_images.append(img)
         
-        # Use the first image's size for calculations
+        # Get the most common size (in case images have different sizes)
+        sizes = [img.size for img in rgb_images]
+        logger.info(f"Image sizes: {sizes}")
+        
+        # Use the first image's size as reference
         width, height = rgb_images[0].size
-        logger.info(f"Image dimensions: {width}x{height}")
+        logger.info(f"Using dimensions for grid: {width}x{height}")
         
         # Create a new image with 2x2 grid layout
-        logger.info(f"Creating new grid image with dimensions {width*2}x{height*2}")
-        grid_image = Image.new('RGB', (width * 2, height * 2))
+        grid_width, grid_height = width * 2, height * 2
+        logger.info(f"Creating new grid image with dimensions {grid_width}x{grid_height}")
+        grid_image = Image.new('RGB', (grid_width, grid_height))
         
-        # Apply rotation directly during pasting for cameras 0 and 1
-        # This avoids creating intermediate images
+        # Paste images into grid, resizing if needed
         logger.info("Pasting images into grid")
         try:
+            # Top-left image (camera 0)
+            if rgb_images[0].size != (width, height):
+                logger.info(f"Resizing image 0 from {rgb_images[0].size} to {width}x{height}")
+                rgb_images[0] = rgb_images[0].resize((width, height))
             grid_image.paste(rgb_images[0], (0, 0))
+            
+            # Top-right image (camera 1)
+            if rgb_images[1].size != (width, height):
+                logger.info(f"Resizing image 1 from {rgb_images[1].size} to {width}x{height}")
+                rgb_images[1] = rgb_images[1].resize((width, height))
             grid_image.paste(rgb_images[1], (width, 0))
+            
+            # Bottom-left image (camera 2)
+            if rgb_images[2].size != (width, height):
+                logger.info(f"Resizing image 2 from {rgb_images[2].size} to {width}x{height}")
+                rgb_images[2] = rgb_images[2].resize((width, height))
             grid_image.paste(rgb_images[2], (0, height))
+            
+            # Bottom-right image (camera 3)
+            if rgb_images[3].size != (width, height):
+                logger.info(f"Resizing image 3 from {rgb_images[3].size} to {width}x{height}")
+                rgb_images[3] = rgb_images[3].resize((width, height))
             grid_image.paste(rgb_images[3], (width, height))
+            
+            logger.info("All images pasted into grid successfully")
         except Exception as e:
-            logger.error(f"Error pasting images into grid: {e}")
+            logger.error(f"Error pasting images into grid: {e}", exc_info=True)
+            raise
         
-        logger.info("Grid image created successfully")
+        logger.info(f"Grid image created successfully with size {grid_image.size}")
         return grid_image
     
     def _draw_cross_at(self, image, x, y, size=None):

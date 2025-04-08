@@ -52,11 +52,27 @@ except Exception as e:
 
 def get_next_capture_number():
     """Get the next capture number for sequential file naming."""
-    existing_files = [f for f in os.listdir(app.config['CAPTURE_FOLDER']) 
-                     if f.startswith('capture_') and f.endswith('.jpg')]
-    numbers = [int(f.split('_')[1].split('.')[0]) for f in existing_files 
-              if f.split('_')[1].split('.')[0].isdigit()]
-    return max(numbers, default=0) + 1
+    try:
+        existing_files = [f for f in os.listdir(app.config['CAPTURE_FOLDER']) 
+                        if f.startswith('capture_') and f.endswith('.jpg')]
+        logger.info(f"Found {len(existing_files)} existing capture files")
+        
+        # Get capture numbers from both grid and individual files
+        numbers = []
+        for f in existing_files:
+            parts = f.split('_')
+            if len(parts) >= 2 and parts[1].split('.')[0].isdigit():
+                numbers.append(int(parts[1].split('.')[0]))
+            elif len(parts) >= 2 and '_cam' in f and parts[1].isdigit():
+                numbers.append(int(parts[1]))
+        
+        next_num = max(numbers, default=0) + 1
+        logger.info(f"Next capture number will be: {next_num}")
+        return next_num
+    except Exception as e:
+        logger.error(f"Error getting next capture number: {e}", exc_info=True)
+        # Fallback to timestamp if there's an error
+        return int(time.time())
 
 def gen_frames():
     """Generate frames for the video feed."""
@@ -192,11 +208,19 @@ def capture():
         
     try:
         logger.info("==== Starting capture from all cameras ====")
+        
+        # Force GC to free up memory before capture
+        gc.collect()
+        memory_before = psutil.Process().memory_info().rss / (1024 * 1024)  # MB
+        logger.info(f"Memory usage before capture: {memory_before:.2f} MB")
+        
+        # Get next capture number
         n = get_next_capture_number()
         logger.info(f"Using capture number {n}")
         
-        # Check capture directory
+        # Check and ensure capture directory exists
         capture_dir = app.config['CAPTURE_FOLDER']
+        logger.info(f"Checking capture directory: {capture_dir}")
         if not os.path.exists(capture_dir):
             logger.warning(f"Capture directory {capture_dir} does not exist, creating it")
             os.makedirs(capture_dir, exist_ok=True)
@@ -210,7 +234,7 @@ def capture():
         logger.info("Capturing images from all cameras")
         try:
             images = camera_manager.capture_all_cameras()
-            logger.info(f"Successfully captured {len(images)} images")
+            logger.info(f"Successfully captured {len(images)} images with dimensions: {[img.size for img in images]}")
         except Exception as e:
             logger.error(f"Failed to capture all camera images: {e}", exc_info=True)
             return jsonify({'success': False, 'error': f'Image capture failed: {str(e)}'}), 500
@@ -225,16 +249,26 @@ def capture():
                 # Ensure image is in RGB mode for JPEG
                 if img.mode == 'RGBA':
                     img = img.convert('RGB')
+                
+                # Save the image
                 img.save(filepath)
-                # Ensure file permissions
-                try:
-                    os.chmod(filepath, 0o644)
-                except Exception as e:
-                    logger.warning(f"Could not set permissions on {filepath}: {e}")
-                filenames.append(filename)
-                logger.info(f"Saved capture from camera {i} to {filepath}")
+                
+                # Verify the file was created
+                if os.path.exists(filepath):
+                    file_size = os.path.getsize(filepath)
+                    logger.info(f"Verified file saved: {filepath} ({file_size} bytes)")
+                    
+                    # Ensure file permissions
+                    try:
+                        os.chmod(filepath, 0o644)
+                    except Exception as e:
+                        logger.warning(f"Could not set permissions on {filepath}: {e}")
+                    
+                    filenames.append(filename)
+                else:
+                    logger.error(f"File not found after save: {filepath}")
             except Exception as e:
-                logger.error(f"Failed to save image from camera {i}: {e}")
+                logger.error(f"Failed to save image from camera {i}: {e}", exc_info=True)
                 # We'll continue to try saving other images
         
         if not filenames:
@@ -248,23 +282,52 @@ def capture():
             grid_filename = f'capture_{n}_grid.jpg'
             grid_filepath = os.path.join(capture_dir, grid_filename)
             logger.info(f"Saving grid image to {grid_filepath}")
+            
+            # Ensure grid image is in RGB mode
+            if grid_img.mode == 'RGBA':
+                grid_img = grid_img.convert('RGB')
+                
             grid_img.save(grid_filepath)
-            # Ensure file permissions
-            try:
-                os.chmod(grid_filepath, 0o644)
-            except Exception as e:
-                logger.warning(f"Could not set permissions on {grid_filepath}: {e}")
-            logger.info(f"Saved combined grid image to {grid_filepath}")
+            
+            # Verify the grid file was created
+            if os.path.exists(grid_filepath):
+                grid_file_size = os.path.getsize(grid_filepath)
+                logger.info(f"Verified grid file saved: {grid_filepath} ({grid_file_size} bytes)")
+                
+                # Ensure file permissions
+                try:
+                    os.chmod(grid_filepath, 0o644)
+                except Exception as e:
+                    logger.warning(f"Could not set permissions on {grid_filepath}: {e}")
+            else:
+                logger.error(f"Grid file not found after save: {grid_filepath}")
+                grid_filename = None
         except Exception as e:
             logger.error(f"Failed to create or save grid image: {e}", exc_info=True)
             grid_filename = None
             # We'll still return the individual images if they were saved
         
+        # List the contents of the captures directory to verify
+        try:
+            dir_contents = os.listdir(capture_dir)
+            logger.info(f"Captures directory now contains {len(dir_contents)} files")
+            # Check if our new files are in the directory
+            new_files = [f for f in dir_contents if f'capture_{n}' in f]
+            logger.info(f"New files created: {new_files}")
+        except Exception as e:
+            logger.error(f"Error listing directory contents: {e}")
+        
+        # Force GC again and check memory usage
+        gc.collect()
+        memory_after = psutil.Process().memory_info().rss / (1024 * 1024)  # MB
+        logger.info(f"Memory usage after capture: {memory_after:.2f} MB (change: {memory_after - memory_before:.2f} MB)")
+        
         logger.info("==== Capture process completed successfully ====")
         return jsonify({
             'success': True, 
             'filenames': filenames,
-            'grid_filename': grid_filename
+            'grid_filename': grid_filename,
+            'capture_number': n
         })
         
     except Exception as e:
@@ -279,22 +342,67 @@ def latest_capture():
         captures_folder = app.config['CAPTURE_FOLDER']
         logger.info(f"Scanning captures folder: {captures_folder}")
         
-        grid_files = [f for f in os.listdir(captures_folder) 
-                     if f.startswith('capture_') and f.endswith('_grid.jpg')]
-        
-        logger.info(f"Found {len(grid_files)} grid files: {grid_files}")
+        # Check if directory exists first
+        if not os.path.exists(captures_folder):
+            logger.warning(f"Captures directory does not exist: {captures_folder}")
+            return jsonify({'success': False, 'error': 'Captures directory not found'}), 404
+            
+        # Get all grid files
+        try:
+            all_files = os.listdir(captures_folder)
+            grid_files = [f for f in all_files 
+                        if f.startswith('capture_') and '_grid.jpg' in f]
+            
+            logger.info(f"Found {len(grid_files)} grid files out of {len(all_files)} total files")
+        except Exception as e:
+            logger.error(f"Error listing captures directory: {e}", exc_info=True)
+            return jsonify({'success': False, 'error': f'Error listing directory: {str(e)}'}), 500
         
         if not grid_files:
             logger.warning("No grid captures found")
             return jsonify({'success': False, 'error': 'No captures found'}), 404
             
         # Get the latest grid file based on capture number
-        latest = max(grid_files, key=lambda x: int(x.split('_')[1]))
-        logger.info(f"Latest grid capture: {latest}")
-        
-        return jsonify({'success': True, 'filename': latest})
+        try:
+            capture_numbers = []
+            for f in grid_files:
+                parts = f.split('_')
+                if len(parts) >= 2 and parts[1].isdigit():
+                    capture_numbers.append((int(parts[1]), f))
+            
+            if not capture_numbers:
+                logger.warning("No valid capture numbers found in filenames")
+                # Fallback to alphabetical sort if we can't extract numbers
+                latest = sorted(grid_files)[-1]
+            else:
+                # Sort by capture number (first tuple element)
+                capture_numbers.sort(reverse=True)
+                # Get the filename (second tuple element)
+                latest = capture_numbers[0][1]
+                
+            logger.info(f"Latest grid capture: {latest}")
+            
+            # Verify the file exists and is readable
+            filepath = os.path.join(captures_folder, latest)
+            if not os.path.exists(filepath):
+                logger.error(f"Found latest capture filename {latest}, but file does not exist at {filepath}")
+                return jsonify({'success': False, 'error': 'Latest capture file not found'}), 404
+                
+            # Get basic file info for logging
+            file_size = os.path.getsize(filepath)
+            logger.info(f"Latest capture file size: {file_size} bytes")
+            
+            return jsonify({
+                'success': True, 
+                'filename': latest,
+                'file_size': file_size,
+                'full_path': filepath
+            })
+        except Exception as e:
+            logger.error(f"Error parsing capture filenames: {e}", exc_info=True)
+            return jsonify({'success': False, 'error': f'Error parsing filenames: {str(e)}'}), 500
     except Exception as e:
-        logger.error(f"Error getting latest capture: {e}", exc_info=True)
+        logger.error(f"Unexpected error getting latest capture: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/captures/<path:filename>')
