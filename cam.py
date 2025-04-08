@@ -46,10 +46,10 @@ try:
         i2c_bus=11,
         mux_addr=0x24,
         camera_count=4,
-        switch_delay=0.1
+        switch_delay=0.5  # Increased from 0.1 to allow more time for switching
     )
-    # Start cycling through cameras every 2 seconds
-    camera_manager.start_camera_cycle(interval=2.0)
+    # Start cycling through cameras every 5 seconds instead of 2
+    camera_manager.start_camera_cycle(interval=5.0)
 except Exception as e:
     logger.error(f"Failed to initialize camera manager: {e}")
     camera_manager = None
@@ -96,13 +96,13 @@ def gen_frames():
             # Add center cross
             camera_manager._add_center_cross(img)
             
-            # TEMPORARILY DISABLED ROTATION FOR DEBUGGING
-            # Commented out rotation to see if it's causing the lockups
-            # if isinstance(current_cam, int) and current_cam in [0, 1]:
-            #     try:
-            #         img = img.rotate(180, expand=False)
-            #     except Exception as e:
-            #         logger.error(f"Error during image rotation: {e}")
+            # Apply rotation for cameras 0 and 1
+            if isinstance(current_cam, int) and current_cam in [0, 1]:
+                try:
+                    # Use NEAREST resampling which is fastest
+                    img = img.rotate(180, Image.NEAREST, expand=False)
+                except Exception as e:
+                    logger.error(f"Error during image rotation: {e}")
             
             # Convert to JPEG bytes (ensuring RGB mode)
             if img.mode == 'RGBA':
@@ -148,9 +148,9 @@ def gen_frames():
                                 i2c_bus=11,
                                 mux_addr=0x24,
                                 camera_count=4,
-                                switch_delay=0.1
+                                switch_delay=0.5
                             )
-                            camera_manager.start_camera_cycle(interval=2.0)
+                            camera_manager.start_camera_cycle(interval=5.0)
                             camera_restart_count += 1
                             logger.info(f"Camera restarted (attempt {camera_restart_count}/{MAX_RESTART_COUNT})")
                             

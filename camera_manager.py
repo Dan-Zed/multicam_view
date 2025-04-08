@@ -88,8 +88,10 @@ class CameraManager:
         try:
             # Rotate cameras 0 and 1 (top two positions) by 180 degrees
             if camera_index in [0, 1]:
-                # Use expand=False to avoid creating a larger buffer
-                return image.rotate(180, expand=False)
+                # Use NEAREST resampling filter which is fastest
+                # expand=False to avoid creating a larger buffer
+                # fillcolor=None to use the default
+                return image.rotate(180, Image.NEAREST, expand=False, fillcolor=None)
             return image
         except Exception as e:
             logger.error(f"Error rotating image for camera {camera_index}: {e}")
@@ -167,7 +169,14 @@ class CameraManager:
                 # In test mode, we just update the state without accessing hardware
                 if not self.test_mode:
                     # Write to register 0x24 with the appropriate command
-                    self.bus.write_byte_data(self.mux_addr, 0x24, command)
+                    try:
+                        self.bus.write_byte_data(self.mux_addr, 0x24, command)
+                        # Add additional delay after switching to prevent system freezes
+                        # This might help with Pi resource management during camera switching
+                        time.sleep(0.5)  # Increased from default 0.1
+                    except Exception as e:
+                        logger.error(f"I2C communication error during camera select: {e}")
+                        return False
                 
                 logger.info(f"Selected camera: {camera_index}")
                 self.current_camera = camera_index
