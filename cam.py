@@ -36,10 +36,6 @@ if not os.path.exists(app.config['CAPTURE_FOLDER']):
 else:
     logger.info(f"Captures directory exists: {app.config['CAPTURE_FOLDER']}")
 
-# Camera manager initialization with restart counter
-camera_restart_count = 0
-MAX_RESTART_COUNT = 3  # Maximum number of times to restart the camera before giving up
-
 # Initialize camera manager
 try:
     camera_manager = CameraManager(
@@ -132,32 +128,9 @@ def gen_frames():
             # Periodically check if we need to restart the camera
             if hasattr(gen_frames, 'frame_count') and gen_frames.frame_count % 100 == 0:
                 if time.time() - gen_frames.last_frame_time > 5.0:  # If more than 5 seconds between frames
-                    logger.warning("Detected potential camera freeze, attempting restart")
-                    global camera_restart_count, camera_manager
-                    try:
-                        if camera_restart_count < MAX_RESTART_COUNT:
-                            # Cleanup existing camera
-                            if camera_manager:
-                                try:
-                                    camera_manager.cleanup()
-                                except Exception as e:
-                                    logger.error(f"Error during camera cleanup: {e}")
-                            
-                            # Reinitialize camera
-                            camera_manager = CameraManager(
-                                i2c_bus=11,
-                                mux_addr=0x24,
-                                camera_count=4,
-                                switch_delay=0.5
-                            )
-                            camera_manager.start_camera_cycle(interval=5.0)
-                            camera_restart_count += 1
-                            logger.info(f"Camera restarted (attempt {camera_restart_count}/{MAX_RESTART_COUNT})")
-                            
-                            # Reset tracking variables
-                            gen_frames.frame_count = 0
-                    except Exception as e:
-                        logger.error(f"Failed to restart camera: {e}")
+                    logger.warning("Detected potential camera freeze - no restart logic implemented")
+                    # Note: We've removed the restart logic that was causing syntax issues
+                    # The raspberry pi should be manually restarted if necessary
             
             # Update last frame time
             gen_frames.last_frame_time = time.time()
