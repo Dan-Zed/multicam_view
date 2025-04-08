@@ -1,161 +1,54 @@
-2025-04-07 14:41:46,963 - multicam_app - INFO - Using captures directory: /home/imager/multicam_view/captures
-2025-04-07 14:41:46,963 - multicam_app - INFO - Captures directory exists: /home/imager/multicam_view/captures
-2025-04-07 14:41:46,964 - camera_manager - INFO - Initialized I2C bus 11
-[3:30:54.887447904] [3894] [1;32m INFO [1;37mCamera [1;34mcamera_manager.cpp:327 [0mlibcamera v0.4.0+78-818d45eb-dirty (2025-02-14T02:03:07GMT)
-[3:30:54.894767246] [3903] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:720 [0mlibpisp version v1.1.0 e7974a156008 27-01-2025 (21:50:51)
-[3:30:54.902740140] [3903] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:1180 [0mRegistered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a to CFE device /dev/media2 and ISP device /dev/media0 using PiSP variant BCM2712_D0
-2025-04-07 14:41:46,980 - picamera2.picamera2 - INFO - Initialization successful.
-2025-04-07 14:41:46,980 - picamera2.picamera2 - INFO - Camera now open.
-2025-04-07 14:41:46,981 - camera_manager - INFO - Camera info: [{'Model': 'imx519', 'Location': 2, 'Rotation': 0, 'Id': '/base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a', 'Num': 0}]
-2025-04-07 14:41:46,982 - camera_manager - INFO - Detected IMX519 sensors
-2025-04-07 14:41:46,983 - picamera2.picamera2 - INFO - Camera configuration has been adjusted!
-[3:30:54.906230692] [3894] [1;32m INFO [1;37mCamera [1;34mcamera.cpp:1202 [0mconfiguring streams: (0) 640x480-XBGR8888 (1) 1280x720-RGGB_PISP_COMP1
-[3:30:54.906317191] [3903] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:1485 [0mSensor: /base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a - Selected sensor format: 1280x720-SRGGB10_1X10 - Selected CFE format: 1280x720-PC1R
-2025-04-07 14:41:46,983 - picamera2.picamera2 - INFO - Configuration successful!
-2025-04-07 14:41:47,157 - picamera2.picamera2 - INFO - Camera started
-2025-04-07 14:41:47,157 - camera_manager - INFO - Selected camera: all
-2025-04-07 14:41:47,258 - camera_manager - INFO - Started camera cycling with interval 2.0s
-2025-04-07 14:41:47,261 - camera_manager - INFO - Selected camera: 0
-2025-04-07 14:41:47,262 - multicam_runner - INFO - Starting multicam view application
-2025-04-07 14:41:47,262 - multicam_runner - INFO - Captures directory: /home/imager/multicam_view/captures
-2025-04-07 14:41:47,262 - multicam_runner - INFO - Contents: []
-2025-04-07 14:41:47,262 - multicam_runner - INFO - Starting web server on 0.0.0.0:8000
+2025-04-08 11:13:11,688 - multicam_app - INFO - Using captures directory: /home/imager/multicam_view/captures
+2025-04-08 11:13:11,688 - multicam_app - INFO - Captures directory exists: /home/imager/multicam_view/captures
+2025-04-08 11:13:11,688 - camera_manager - INFO - Initialized I2C bus 11
+[0:47:07.330910630] [2451] [1;32m INFO [1;37mCamera [1;34mcamera_manager.cpp:327 [0mlibcamera v0.4.0+78-818d45eb-dirty (2025-02-14T02:03:07GMT)
+[0:47:07.338186960] [2460] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:720 [0mlibpisp version v1.1.0 e7974a156008 27-01-2025 (21:50:51)
+[0:47:07.346256934] [2460] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:1180 [0mRegistered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a to CFE device /dev/media0 and ISP device /dev/media2 using PiSP variant BCM2712_D0
+2025-04-08 11:13:11,705 - picamera2.picamera2 - INFO - Initialization successful.
+2025-04-08 11:13:11,705 - picamera2.picamera2 - INFO - Camera now open.
+2025-04-08 11:13:11,706 - camera_manager - INFO - Camera info: [{'Model': 'imx519', 'Location': 2, 'Rotation': 0, 'Id': '/base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a', 'Num': 0}]
+2025-04-08 11:13:11,706 - camera_manager - INFO - Detected IMX519 sensors
+2025-04-08 11:13:11,708 - picamera2.picamera2 - INFO - Camera configuration has been adjusted!
+[0:47:07.349743397] [2451] [1;32m INFO [1;37mCamera [1;34mcamera.cpp:1202 [0mconfiguring streams: (0) 1280x720-XBGR8888 (1) 1280x720-RGGB_PISP_COMP1
+[0:47:07.349828341] [2460] [1;32m INFO [1;37mRPI [1;34mpisp.cpp:1485 [0mSensor: /base/axi/pcie@1000120000/rp1/i2c@80000/imx519@1a - Selected sensor format: 1280x720-SRGGB10_1X10 - Selected CFE format: 1280x720-PC1R
+2025-04-08 11:13:11,708 - picamera2.picamera2 - INFO - Configuration successful!
+2025-04-08 11:13:11,886 - picamera2.picamera2 - INFO - Camera started
+2025-04-08 11:13:11,887 - camera_manager - INFO - Selected camera: all
+2025-04-08 11:13:11,987 - camera_manager - INFO - Camera initialized in four-in-one mode for preview
+2025-04-08 11:13:11,987 - camera_manager - INFO - Setting preview to four-in-one mode
+2025-04-08 11:13:11,987 - camera_manager - INFO - Selected camera: all
+2025-04-08 11:13:12,091 - multicam_runner - INFO - Starting multicam view application
+2025-04-08 11:13:12,091 - multicam_runner - INFO - Captures directory: /home/imager/multicam_view/captures
+2025-04-08 11:13:12,091 - multicam_runner - INFO - Contents: ['capture_1_cam1.jpg', 'test_capture_1744031307.jpg', 'capture_1_cam3.jpg', 'capture_1_cam0.jpg', 'capture_1_cam2.jpg', 'capture_1_grid.jpg']
+2025-04-08 11:13:12,091 - multicam_runner - INFO - Starting web server on 0.0.0.0:8000
  * Serving Flask app 'cam'
  * Debug mode: off
-2025-04-07 14:41:47,267 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+2025-04-08 11:13:12,097 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on all addresses (0.0.0.0)
  * Running on http://127.0.0.1:8000
- * Running on http://10.12.245.42:8000
-2025-04-07 14:41:47,267 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
-2025-04-07 14:41:48,938 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:41:48] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:41:49,362 - camera_manager - INFO - Selected camera: 1
-2025-04-07 14:41:50,964 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:41:50] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:41:51,463 - camera_manager - INFO - Selected camera: 2
-2025-04-07 14:41:53,245 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:41:53] "[33mGET /debug/javascript_ajax_test HTTP/1.1[0m" 404 -
-2025-04-07 14:41:53,328 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:41:53] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:41:53,563 - camera_manager - INFO - Selected camera: 0
-2025-04-07 14:41:54,395 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:41:54] "[33mGET /debug/javascript_ajax_test HTTP/1.1[0m" 404 -
-2025-04-07 14:41:55,461 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:41:55] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:41:55,664 - camera_manager - INFO - Selected camera: 1
-2025-04-07 14:41:57,375 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:41:57] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:41:57,765 - camera_manager - INFO - Selected camera: 2
-2025-04-07 14:41:59,436 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:41:59] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:41:59,865 - camera_manager - INFO - Selected camera: 0
-2025-04-07 14:42:01,558 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:01] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:01,966 - camera_manager - INFO - Selected camera: 1
-2025-04-07 14:42:03,658 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:03] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:04,067 - camera_manager - INFO - Selected camera: 2
-2025-04-07 14:42:04,611 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:04] "[33mGET /debug/ HTTP/1.1[0m" 404 -
-2025-04-07 14:42:05,671 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:05] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:06,167 - camera_manager - INFO - Selected camera: 0
-2025-04-07 14:42:06,748 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:06] "GET /debug HTTP/1.1" 200 -
-2025-04-07 14:42:06,796 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:06] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:06,798 - multicam_app - INFO - Looking for latest capture
-2025-04-07 14:42:06,799 - multicam_app - INFO - Scanning captures folder: /home/imager/multicam_view/captures
-2025-04-07 14:42:06,801 - multicam_app - INFO - Found 0 grid files: []
-2025-04-07 14:42:06,801 - multicam_app - WARNING - No grid captures found
-2025-04-07 14:42:06,801 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:06] "[33mGET /latest_capture HTTP/1.1[0m" 404 -
-2025-04-07 14:42:06,806 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:06] "GET /video_feed HTTP/1.1" 200 -
-2025-04-07 14:42:07,672 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:07] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:08,268 - camera_manager - INFO - Selected camera: 1
-2025-04-07 14:42:08,807 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:08] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:09,679 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:09] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:10,369 - camera_manager - INFO - Selected camera: 2
-2025-04-07 14:42:10,805 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:10] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:11,708 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:11] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:12,469 - camera_manager - INFO - Selected camera: 0
-2025-04-07 14:42:12,852 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:12] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:13,737 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:13] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:14,296 - camera_manager - INFO - Selected camera: 1
-2025-04-07 14:42:14,398 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:14] "GET /select_camera/1 HTTP/1.1" 200 -
-2025-04-07 14:42:14,570 - camera_manager - INFO - Stopped camera cycling
-2025-04-07 14:42:14,570 - camera_manager - INFO - Selected camera: 0
-2025-04-07 14:42:14,671 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:14] "GET /select_camera/0 HTTP/1.1" 200 -
-2025-04-07 14:42:14,821 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:14] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:15,562 - camera_manager - INFO - Selected camera: 2
-2025-04-07 14:42:15,662 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:15] "GET /select_camera/2 HTTP/1.1" 200 -
-2025-04-07 14:42:15,756 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:15] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:16,750 - camera_manager - WARNING - Camera 4 (index 3) is broken, not switching to it
-2025-04-07 14:42:16,750 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:16] "GET /select_camera/3 HTTP/1.1" 200 -
-2025-04-07 14:42:16,821 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:16] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:17,773 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:17] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:17,888 - camera_manager - INFO - Selected camera: 0
-2025-04-07 14:42:17,989 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:17] "GET /select_camera/0 HTTP/1.1" 200 -
-2025-04-07 14:42:18,799 - camera_manager - INFO - Selected camera: 1
-2025-04-07 14:42:18,819 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:18] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:18,899 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:18] "GET /select_camera/1 HTTP/1.1" 200 -
-2025-04-07 14:42:19,613 - camera_manager - INFO - Selected camera: 2
-2025-04-07 14:42:19,714 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:19] "GET /select_camera/2 HTTP/1.1" 200 -
-2025-04-07 14:42:19,798 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:19] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:20,851 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:20] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:21,807 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:21] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:22,928 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:22] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:23,843 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:23] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:24,026 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:24] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:24,955 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:24] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:25,863 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:25] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:27,075 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:27] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:27,895 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:27] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:28,991 - multicam_app - INFO - Listing contents of /home/imager/multicam_view/captures
-2025-04-07 14:42:28,992 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:28] "GET /debug/captures HTTP/1.1" 200 -
-2025-04-07 14:42:29,090 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:29] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:29,921 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:29] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:31,103 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:31] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:31,946 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:31] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:33,123 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:33] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:34,083 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:34] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:35,157 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:35] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:36,190 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:36] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:37,176 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:37] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:38,227 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:38] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:39,205 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:39] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:40,249 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:40] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:41,208 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:41] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:42,279 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:42] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:43,244 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:43] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:44,312 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:44] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:45,253 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:45] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:46,339 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:46] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:47,280 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:47] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:48,342 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:48] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:49,284 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:49] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:50,370 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:50] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:51,314 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:51] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:52,406 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:52] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:53,336 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:53] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:54,442 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:54] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:55,345 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:55] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:55,405 - multicam_app - INFO - Test capture: capturing from camera 0
-2025-04-07 14:42:56,471 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:56] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:57,355 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:57] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:58,561 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:58] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:42:59,380 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:42:59] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:00,511 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:00] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:01,404 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:01] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:02,509 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:02] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:03,431 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:03] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:04,524 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:04] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:05,431 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:05] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:06,534 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:06] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:07,455 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:07] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:08,549 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:08] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:09,024 - multicam_app - INFO - Listing contents of /home/imager/multicam_view/captures
-2025-04-07 14:43:09,026 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:09] "GET /debug/captures HTTP/1.1" 200 -
-2025-04-07 14:43:09,044 - multicam_app - INFO - Starting capture from all cameras
-2025-04-07 14:43:09,044 - multicam_app - INFO - Using capture number 1
-2025-04-07 14:43:09,044 - multicam_app - INFO - Capturing images from all cameras
-2025-04-07 14:43:09,044 - camera_manager - INFO - Starting to capture from all cameras
-2025-04-07 14:43:09,044 - camera_manager - INFO - Capturing from camera 0
-2025-04-07 14:43:09,470 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:09] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:10,573 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:10] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:11,481 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:11] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:12,603 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:12] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:13,513 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:13] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:14,606 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:14] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:15,532 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:15] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:16,624 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:16] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:17,567 - werkzeug - INFO - 10.12.245.124 - - [07/Apr/2025 14:43:17] "GET /camera_info HTTP/1.1" 200 -
-2025-04-07 14:43:18,500 - multicam_app - INFO - Test pipeline: capturing image from camera 0
-2025-04-07 14:43:21,636 - multicam_app - INFO - Test pipeline: capturing image from camera 0
-2025-04-07 14:43:44,121 - multicam_app - INFO - Test capture: capturing from camera 0
-2025-04-07 14:43:44,990 - multicam_app - INFO - Test pipeline: capturing image from camera 0
+ * Running on http://10.12.245.41:8000
+2025-04-08 11:13:12,097 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+[0:47:08.529164622] [2460] [1;33m WARN [1;37mV4L2 [1;34mv4l2_videodevice.cpp:2150 [0;32m/dev/video4[20:cap]: [0mDequeue timer of 1000000.00us has expired!
+[0:47:08.529209937] [2460] [1;31mERROR [1;37mRPI [1;34mpipeline_base.cpp:1429 [0mCamera frontend has timed out!
+[0:47:08.529214955] [2460] [1;31mERROR [1;37mRPI [1;34mpipeline_base.cpp:1430 [0mPlease check that your camera sensor connector is attached securely.
+[0:47:08.529219362] [2460] [1;31mERROR [1;37mRPI [1;34mpipeline_base.cpp:1431 [0mAlternatively, try another cable and/or sensor.
+2025-04-08 11:13:16,350 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:16] "GET / HTTP/1.1" 200 -
+2025-04-08 11:13:16,473 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:16] "GET /camera_info HTTP/1.1" 200 -
+2025-04-08 11:13:16,474 - multicam_app - INFO - Looking for latest capture
+2025-04-08 11:13:16,474 - multicam_app - INFO - Scanning captures folder: /home/imager/multicam_view/captures
+2025-04-08 11:13:16,474 - multicam_app - INFO - Found 1 grid files: ['capture_1_grid.jpg']
+2025-04-08 11:13:16,474 - multicam_app - INFO - Latest grid capture: capture_1_grid.jpg
+2025-04-08 11:13:16,474 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:16] "GET /latest_capture HTTP/1.1" 200 -
+2025-04-08 11:13:16,501 - multicam_app - INFO - Request to serve capture file: capture_1_grid.jpg
+2025-04-08 11:13:16,508 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:16] "GET /captures/capture_1_grid.jpg?t=1744103596482 HTTP/1.1" 200 -
+2025-04-08 11:13:18,511 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:18] "GET /camera_info HTTP/1.1" 200 -
+2025-04-08 11:13:20,475 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:20] "GET /camera_info HTTP/1.1" 200 -
+2025-04-08 11:13:20,562 - multicam_app - INFO - Listing contents of /home/imager/multicam_view/captures
+2025-04-08 11:13:20,562 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:20] "GET /debug/captures HTTP/1.1" 200 -
+2025-04-08 11:13:20,578 - multicam_app - INFO - Test capture: capturing from camera 0
+2025-04-08 11:13:20,578 - camera_manager - INFO - Exited four-in-one preview mode
+2025-04-08 11:13:22,590 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:22] "GET /camera_info HTTP/1.1" 200 -
+2025-04-08 11:13:24,621 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:24] "GET /camera_info HTTP/1.1" 200 -
+2025-04-08 11:13:26,636 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:26] "GET /camera_info HTTP/1.1" 200 -
+2025-04-08 11:13:28,672 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:28] "GET /camera_info HTTP/1.1" 200 -
+2025-04-08 11:13:30,705 - werkzeug - INFO - 10.12.245.124 - - [08/Apr/2025 11:13:30] "GET /camera_info HTTP/1.1" 200 -
