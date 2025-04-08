@@ -87,7 +87,7 @@ class CameraManager:
         """
         # Rotate cameras 0 and 1 (top two positions) by 180 degrees
         if camera_index in [0, 1]:
-            return ImageOps.rotate(image, 180)
+            return image.rotate(180)
         return image
     
     def initialize_camera(self, mock_picam=None):
