@@ -44,8 +44,8 @@ try:
         camera_count=4,
         switch_delay=0.5  # Increased from 0.1 to allow more time for switching
     )
-    # Start cycling through cameras every 5 seconds instead of 2
-    camera_manager.start_camera_cycle(interval=5.0)
+    # Start cycling through cameras every 2 seconds (default)
+    camera_manager.start_camera_cycle(interval=2.0)
 except Exception as e:
     logger.error(f"Failed to initialize camera manager: {e}")
     camera_manager = None
@@ -83,14 +83,34 @@ def gen_frames():
             buffer = camera_manager.picam.capture_array()
             img = Image.fromarray(buffer)
             
-            # Add camera index indicator
+            # Add camera index indicator and center crosses
             draw = ImageDraw.Draw(img)
             current_cam = camera_manager.current_camera
-            if isinstance(current_cam, int):  # Skip for 'all' mode
-                draw.text((20, 20), f"Camera {current_cam + 1}", fill=(255, 255, 255))
             
-            # Add center cross
-            camera_manager._add_center_cross(img)
+            if isinstance(current_cam, int):  # Single camera mode
+                # Add camera number indicator
+                draw.text((20, 20), f"Camera {current_cam + 1}", fill=(255, 255, 255))
+                
+                # Add center cross for single camera view
+                camera_manager._add_center_cross(img)
+            else:  # Four-in-one mode - add crosses to each quadrant
+                # Get dimensions for calculating quadrant centers
+                width, height = img.size
+                quadrant_width = width // 2
+                quadrant_height = height // 2
+                
+                # Add a cross to the center of each quadrant
+                # Top-left quadrant
+                camera_manager._draw_cross_at(img, quadrant_width // 2, quadrant_height // 2)
+                
+                # Top-right quadrant
+                camera_manager._draw_cross_at(img, quadrant_width + quadrant_width // 2, quadrant_height // 2)
+                
+                # Bottom-left quadrant
+                camera_manager._draw_cross_at(img, quadrant_width // 2, quadrant_height + quadrant_height // 2)
+                
+                # Bottom-right quadrant
+                camera_manager._draw_cross_at(img, quadrant_width + quadrant_width // 2, quadrant_height + quadrant_height // 2)
             
             # Rotation removed - hardware changes make it unnecessary
             # (previously had rotation code here for cameras 0 and 1)
@@ -118,14 +138,20 @@ def gen_frames():
             del img_io
             
             # Sleep briefly to control frame rate and reduce CPU usage
-            time.sleep(0.5)  # Increase sleep to 0.5 seconds (2 fps) to reduce resource usage
+            time.sleep(0.1)  # Back to default - 10 fps
             
             # Periodically check if we need to restart the camera
             if hasattr(gen_frames, 'frame_count') and gen_frames.frame_count % 100 == 0:
                 if time.time() - gen_frames.last_frame_time > 5.0:  # If more than 5 seconds between frames
                     logger.warning("Detected potential camera freeze - no restart logic implemented")
-                    # Note: We've removed the restart logic that was causing syntax issues
-                    # The raspberry pi should be manually restarted if necessary
+                    # Example restart code (commented out to avoid syntax issues):
+                    # camera_manager = CameraManager(
+                    #     i2c_bus=11,
+                    #     mux_addr=0x24,
+                    #     camera_count=4,
+                    #     switch_delay=0.5
+                    # )
+                    # camera_manager.start_camera_cycle(interval=2.0)
             
             # Update last frame time
             gen_frames.last_frame_time = time.time()

@@ -130,12 +130,7 @@ class CameraManager:
         """
         def _do_select_camera():
             try:
-                # Special handling for camera 4 (index 3) which is broken
-                if camera_index == 3:
-                    logger.warning("Camera 4 (index 3) is broken, not switching to it")
-                    self.current_camera = camera_index  # Still update the state
-                    return True
-                    
+                # All cameras are working now
                 if camera_index not in self.CAMERA_COMMANDS:
                     logger.error(f"Invalid camera index: {camera_index}")
                     return False
@@ -227,19 +222,8 @@ class CameraManager:
                 if camera_index is not None:
                     self.select_camera(camera_index, already_locked=True)
                 
-                # Special handling for camera 4 (index 3)
-                if camera_index == 3 or self.current_camera == 3:
-                    logger.info("Creating dummy image for broken camera 4")
-                    blank_img = Image.new('RGB', (640, 480), color='black')
-                    draw = ImageDraw.Draw(blank_img)
-                    text = "Camera Disconnected"
-                    text_width = len(text) * 8
-                    text_height = 15
-                    text_x = (blank_img.width - text_width) // 2
-                    text_y = (blank_img.height - text_height) // 2
-                    draw.text((text_x, text_y), text, fill=(255, 0, 0))
-                    self._add_center_cross(blank_img)
-                    return blank_img
+                # All cameras are working now
+                # Default capture for all cameras
                 
                 # Handle test mode with a mock image
                 if self.test_mode:
@@ -316,10 +300,8 @@ class CameraManager:
             if self.test_mode:
                 logger.info("Test mode: generating test images for all cameras")
                 for i in range(self.camera_count):
-                    if i == 3:  # Broken camera
-                        img = Image.new('RGB', (640, 480), color='black')
-                        draw = ImageDraw.Draw(img)
-                        draw.text((240, 240), "Camera Disconnected", fill=(255, 0, 0))
+                    if i == 3:  # Test image for camera 4 
+                        img = Image.new('RGB', (640, 480), color=(150, 100, 200))
                     else:
                         img = Image.new('RGB', (640, 480), color=(100, 150, 200))
                     self._add_center_cross(img)
@@ -340,20 +322,7 @@ class CameraManager:
                 for i in range(self.camera_count):
                     logger.info(f"Capturing from camera {i}")
                     
-                    # Special handling for camera 4 (index 3) which is broken
-                    if i == 3:
-                        logger.info("Creating dummy image for broken camera 4")
-                        blank_img = Image.new('RGB', (640, 480), color='black')
-                        draw = ImageDraw.Draw(blank_img)
-                        text = "Camera Disconnected"
-                        text_width = len(text) * 8
-                        text_height = 15
-                        text_x = (blank_img.width - text_width) // 2
-                        text_y = (blank_img.height - text_height) // 2
-                        draw.text((text_x, text_y), text, fill=(255, 0, 0))
-                        self._add_center_cross(blank_img)
-                        images.append(blank_img)
-                        continue
+                    # All cameras are working now - no need for special handling
                     
                     # Select camera without using capture_image to avoid nested locks
                     self.select_camera(i, already_locked=True)
@@ -448,26 +417,46 @@ class CameraManager:
         logger.info("Grid image created successfully")
         return grid_image
     
-    def _add_center_cross(self, image):
-        """Add a green cross in the center of the image."""
-        draw = ImageDraw.Draw(image)
-        width, height = image.size
-        center_x, center_y = width // 2, height // 2
-        size = min(width, height) // 20  # Cross size proportional to image
+    def _draw_cross_at(self, image, x, y, size=None):
+        """Draw a green cross at the specified location.
         
+        Parameters:
+        -----------
+        image : PIL.Image
+            Image to draw on
+        x : int
+            X coordinate for center of cross
+        y : int
+            Y coordinate for center of cross
+        size : int or None
+            Size of cross arms (proportional to image if None)
+        """
+        draw = ImageDraw.Draw(image)
+        if size is None:
+            # Make cross size proportional to image, but smaller than the default cross
+            size = min(image.width, image.height) // 30
+            
         # Draw horizontal line
         draw.line(
-            (center_x - size, center_y, center_x + size, center_y),
+            (x - size, y, x + size, y),
             fill=(0, 255, 0),  # Green color (R,G,B)
             width=1            # Single-pixel thin
         )
         
         # Draw vertical line
         draw.line(
-            (center_x, center_y - size, center_x, center_y + size),
+            (x, y - size, x, y + size),
             fill=(0, 255, 0),  # Green color (R,G,B)
             width=1            # Single-pixel thin
         )
+    
+    def _add_center_cross(self, image):
+        """Add a green cross in the center of the image."""
+        width, height = image.size
+        center_x, center_y = width // 2, height // 2
+        size = min(width, height) // 20  # Cross size proportional to image
+        
+        self._draw_cross_at(image, center_x, center_y, size)
     
     def cleanup(self):
         """Clean up resources."""
