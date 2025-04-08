@@ -70,32 +70,8 @@ class CameraManager:
                 
             self.initialize_camera()
     
-    def _rotate_camera_image(self, image, camera_index):
-        """Rotate specific camera images by 180 degrees if needed.
-        
-        Parameters:
-        -----------
-        image : PIL.Image
-            The image to potentially rotate
-        camera_index : int
-            Index of the camera (0-3)
-            
-        Returns:
-        --------
-        PIL.Image
-            The rotated image if needed, otherwise the original image
-        """
-        try:
-            # Rotate cameras 0 and 1 (top two positions) by 180 degrees
-            if camera_index in [0, 1]:
-                # Use NEAREST resampling filter which is fastest
-                # expand=False to avoid creating a larger buffer
-                # fillcolor=None to use the default
-                return image.rotate(180, Image.NEAREST, expand=False, fillcolor=None)
-            return image
-        except Exception as e:
-            logger.error(f"Error rotating image for camera {camera_index}: {e}")
-            return image  # Return original image on error
+    # Rotation method has been removed since it's no longer needed due to hardware changes
+    # Previously had _rotate_camera_image method here
     
     def initialize_camera(self, mock_picam=None):
         """Initialize the Picamera2 instance and create configurations."""
@@ -263,8 +239,6 @@ class CameraManager:
                     text_y = (blank_img.height - text_height) // 2
                     draw.text((text_x, text_y), text, fill=(255, 0, 0))
                     self._add_center_cross(blank_img)
-                    # Rotate if needed
-                    blank_img = self._rotate_camera_image(blank_img, camera_index)
                     return blank_img
                 
                 # Handle test mode with a mock image
@@ -272,8 +246,6 @@ class CameraManager:
                     logger.info("Test mode: returning test image")
                     test_img = Image.new('RGB', (640, 480), color=(100, 150, 200))
                     self._add_center_cross(test_img)
-                    # Rotate if needed
-                    test_img = self._rotate_camera_image(test_img, camera_index)
                     return test_img
                 
                 # Switch to still config for high-res capture (includes autofocus)
@@ -295,9 +267,6 @@ class CameraManager:
 
                 # Add green cross in the center
                 self._add_center_cross(image)
-                
-                # Rotate if needed
-                image = self._rotate_camera_image(image, camera_index if camera_index is not None else self.current_camera)
                 
                 # Switch back to video config (includes continuous autofocus)
                 logger.info("Switching back to video config")
@@ -383,8 +352,6 @@ class CameraManager:
                         text_y = (blank_img.height - text_height) // 2
                         draw.text((text_x, text_y), text, fill=(255, 0, 0))
                         self._add_center_cross(blank_img)
-                        # Rotate if needed
-                        blank_img = self._rotate_camera_image(blank_img, i)
                         images.append(blank_img)
                         continue
                     
@@ -411,8 +378,6 @@ class CameraManager:
                     
                     # Add green cross in the center
                     self._add_center_cross(image)
-                    # Rotate if needed
-                    image = self._rotate_camera_image(image, i)
                     
                     # Ensure image is in RGB mode
                     if image.mode == 'RGBA':
@@ -454,8 +419,6 @@ class CameraManager:
         # Make sure all images are in RGB mode
         rgb_images = []
         for i, img in enumerate(images):
-            # Apply rotation for cameras 0 and 1 (top row)
-            img = self._rotate_camera_image(img, i)
             
             if img.mode == 'RGBA':
                 logger.info(f"Converting image {i} from RGBA to RGB")

@@ -92,13 +92,8 @@ def gen_frames():
             # Add center cross
             camera_manager._add_center_cross(img)
             
-            # Apply rotation for cameras 0 and 1
-            if isinstance(current_cam, int) and current_cam in [0, 1]:
-                try:
-                    # Use NEAREST resampling which is fastest
-                    img = img.rotate(180, Image.NEAREST, expand=False)
-                except Exception as e:
-                    logger.error(f"Error during image rotation: {e}")
+            # Rotation removed - hardware changes make it unnecessary
+            # (previously had rotation code here for cameras 0 and 1)
             
             # Convert to JPEG bytes (ensuring RGB mode)
             if img.mode == 'RGBA':
