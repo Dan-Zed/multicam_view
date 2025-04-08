@@ -4,6 +4,8 @@ import os
 import time
 import logging
 import traceback
+import gc  # for garbage collection
+import psutil  # for memory monitoring - you may need to install this with pip/poetry
 from PIL import Image, ImageDraw
 from camera_manager import CameraManager
 
@@ -33,6 +35,10 @@ if not os.path.exists(app.config['CAPTURE_FOLDER']):
         logger.warning(f"Could not set permissions on captures directory: {e}")
 else:
     logger.info(f"Captures directory exists: {app.config['CAPTURE_FOLDER']}")
+
+# Camera manager initialization with restart counter
+camera_restart_count = 0
+MAX_RESTART_COUNT = 3  # Maximum number of times to restart the camera before giving up
 
 # Initialize camera manager
 try:
@@ -70,6 +76,11 @@ def gen_frames():
                b'Content-Type: image/jpeg\r\n\r\n' + img_io.getvalue() + b'\r\n')
         return
 
+    # Initialize frame tracking
+    if not hasattr(gen_frames, 'frame_count'):
+        gen_frames.frame_count = 0
+        gen_frames.last_frame_time = time.time()
+
     while True:
         try:
             # Capture a frame with the current camera
@@ -85,14 +96,13 @@ def gen_frames():
             # Add center cross
             camera_manager._add_center_cross(img)
             
-            # Apply rotation ONLY if in single camera mode (0 or 1)
-            # Avoid rotation in video streaming to reduce performance impact
-            if isinstance(current_cam, int) and current_cam in [0, 1]:
-                try:
-                    # Use expand=False to avoid creating larger buffer
-                    img = img.rotate(180, expand=False)
-                except Exception as e:
-                    logger.error(f"Error during image rotation: {e}")
+            # TEMPORARILY DISABLED ROTATION FOR DEBUGGING
+            # Commented out rotation to see if it's causing the lockups
+            # if isinstance(current_cam, int) and current_cam in [0, 1]:
+            #     try:
+            #         img = img.rotate(180, expand=False)
+            #     except Exception as e:
+            #         logger.error(f"Error during image rotation: {e}")
             
             # Convert to JPEG bytes (ensuring RGB mode)
             if img.mode == 'RGBA':
@@ -101,6 +111,13 @@ def gen_frames():
             img.save(img_io, format='JPEG')
             img_io.seek(0)
             
+            # Update frame counter
+            if not hasattr(gen_frames, 'frame_count'):
+                gen_frames.frame_count = 1
+                gen_frames.last_frame_time = time.time()
+            else:
+                gen_frames.frame_count += 1
+
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + img_io.getvalue() + b'\r\n')
             
@@ -110,7 +127,40 @@ def gen_frames():
             del img_io
             
             # Sleep briefly to control frame rate and reduce CPU usage
-            time.sleep(0.2)  # Reduce from 0.1 to 0.2 to lower CPU usage
+            time.sleep(0.5)  # Increase sleep to 0.5 seconds (2 fps) to reduce resource usage
+            
+            # Periodically check if we need to restart the camera
+            if hasattr(gen_frames, 'frame_count') and gen_frames.frame_count % 100 == 0:
+                if time.time() - gen_frames.last_frame_time > 5.0:  # If more than 5 seconds between frames
+                    logger.warning("Detected potential camera freeze, attempting restart")
+                    try:
+                        global camera_restart_count, camera_manager
+                        if camera_restart_count < MAX_RESTART_COUNT:
+                            # Cleanup existing camera
+                            if camera_manager:
+                                try:
+                                    camera_manager.cleanup()
+                                except Exception as e:
+                                    logger.error(f"Error during camera cleanup: {e}")
+                            
+                            # Reinitialize camera
+                            camera_manager = CameraManager(
+                                i2c_bus=11,
+                                mux_addr=0x24,
+                                camera_count=4,
+                                switch_delay=0.1
+                            )
+                            camera_manager.start_camera_cycle(interval=2.0)
+                            camera_restart_count += 1
+                            logger.info(f"Camera restarted (attempt {camera_restart_count}/{MAX_RESTART_COUNT})")
+                            
+                            # Reset tracking variables
+                            gen_frames.frame_count = 0
+                    except Exception as e:
+                        logger.error(f"Failed to restart camera: {e}")
+            
+            # Update last frame time
+            gen_frames.last_frame_time = time.time()
             
         except Exception as e:
             logger.error(f"Error generating frame: {e}")
