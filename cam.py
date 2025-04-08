@@ -85,12 +85,14 @@ def gen_frames():
             # Add center cross
             camera_manager._add_center_cross(img)
             
-            # Apply rotation if needed for cameras 0 and 1 (simpler version)
+            # Apply rotation ONLY if in single camera mode (0 or 1)
+            # Avoid rotation in video streaming to reduce performance impact
             if isinstance(current_cam, int) and current_cam in [0, 1]:
-                # Rotate 180 degrees
-                img = img.rotate(180)
-            # In four-in-one mode, we don't try to rotate parts of the image
-            # This will be handled by the individual camera rotations when in single-camera mode
+                try:
+                    # Use expand=False to avoid creating larger buffer
+                    img = img.rotate(180, expand=False)
+                except Exception as e:
+                    logger.error(f"Error during image rotation: {e}")
             
             # Convert to JPEG bytes (ensuring RGB mode)
             if img.mode == 'RGBA':
@@ -102,12 +104,29 @@ def gen_frames():
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + img_io.getvalue() + b'\r\n')
             
-            # Sleep briefly to control frame rate
-            time.sleep(0.1)
+            # Explicitly clean up to prevent memory leaks
+            del buffer
+            del img
+            del img_io
+            
+            # Sleep briefly to control frame rate and reduce CPU usage
+            time.sleep(0.2)  # Reduce from 0.1 to 0.2 to lower CPU usage
             
         except Exception as e:
             logger.error(f"Error generating frame: {e}")
-            time.sleep(0.5)
+            # Return an error frame instead of just logging
+            try:
+                error_img = Image.new('RGB', (640, 480), color='black')
+                draw = ImageDraw.Draw(error_img)
+                draw.text((320, 240), f"Frame Error: {str(e)}", fill=(255, 0, 0))
+                img_io = io.BytesIO()
+                error_img.save(img_io, format='JPEG')
+                img_io.seek(0)
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + img_io.getvalue() + b'\r\n')
+            except Exception as e2:
+                logger.error(f"Error creating error frame: {e2}")
+            time.sleep(1.0)  # Longer sleep on error
 
 @app.route('/')
 def index():

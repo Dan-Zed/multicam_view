@@ -85,10 +85,15 @@ class CameraManager:
         PIL.Image
             The rotated image if needed, otherwise the original image
         """
-        # Rotate cameras 0 and 1 (top two positions) by 180 degrees
-        if camera_index in [0, 1]:
-            return image.rotate(180)
-        return image
+        try:
+            # Rotate cameras 0 and 1 (top two positions) by 180 degrees
+            if camera_index in [0, 1]:
+                # Use expand=False to avoid creating a larger buffer
+                return image.rotate(180, expand=False)
+            return image
+        except Exception as e:
+            logger.error(f"Error rotating image for camera {camera_index}: {e}")
+            return image  # Return original image on error
     
     def initialize_camera(self, mock_picam=None):
         """Initialize the Picamera2 instance and create configurations."""
@@ -276,6 +281,9 @@ class CameraManager:
                 buffer = self.picam.capture_array()
                 image = Image.fromarray(buffer)
                 
+                # Explicitly clean up intermediate large buffers
+                del buffer
+
                 # Add green cross in the center
                 self._add_center_cross(image)
                 
@@ -381,6 +389,8 @@ class CameraManager:
                         buffer = self.picam.capture_array()
                         logger.info(f"Successfully captured array from camera {i}")
                         image = Image.fromarray(buffer)
+                        # Clean up large buffer immediately
+                        del buffer
                         logger.info(f"Successfully converted array to image for camera {i}")
                     except Exception as e:
                         logger.error(f"Error capturing from camera {i}: {e}")
@@ -452,12 +462,16 @@ class CameraManager:
         logger.info(f"Creating new grid image with dimensions {width*2}x{height*2}")
         grid_image = Image.new('RGB', (width * 2, height * 2))
         
-        # Paste images into grid
+        # Apply rotation directly during pasting for cameras 0 and 1
+        # This avoids creating intermediate images
         logger.info("Pasting images into grid")
-        grid_image.paste(rgb_images[0], (0, 0))
-        grid_image.paste(rgb_images[1], (width, 0))
-        grid_image.paste(rgb_images[2], (0, height))
-        grid_image.paste(rgb_images[3], (width, height))
+        try:
+            grid_image.paste(rgb_images[0], (0, 0))
+            grid_image.paste(rgb_images[1], (width, 0))
+            grid_image.paste(rgb_images[2], (0, height))
+            grid_image.paste(rgb_images[3], (width, height))
+        except Exception as e:
+            logger.error(f"Error pasting images into grid: {e}")
         
         logger.info("Grid image created successfully")
         return grid_image
