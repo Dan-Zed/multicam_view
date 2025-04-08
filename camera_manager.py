@@ -1,6 +1,7 @@
 import time
 import logging
 import threading
+import gc  # for garbage collection
 import smbus2
 from picamera2 import Picamera2
 from libcamera import controls
@@ -14,23 +15,46 @@ logging.basicConfig(
 )
 logger = logging.getLogger('camera_manager')
 
+# Basic configuration values
+CONFIG = {
+    "I2C_BUS": 11,
+    "MUX_ADDR": 0x24,
+    "CAMERA_COUNT": 4,
+    "SWITCH_DELAY": 0.5,  # Delay after switching cameras (seconds)
+    "STABILIZATION_DELAY": 1.0,  # Delay for camera stabilization (seconds)
+    "VIDEO_RESOLUTION": (1280, 720),  # 720p for video streaming
+    "STILL_RESOLUTION": (4056, 3040),  # Full resolution for still captures
+    "CYCLE_INTERVAL": 1.0,  # Default seconds between camera cycles
+}
+
+
 class CameraManager:
     """
     Manager for controlling multiple cameras via I2C multiplexer.
     
     This class handles switching between cameras connected to an Arducam camarray HAT 
-    with IMX519 sensors via I2C bus 11 at address 0x24.
+    with IMX519 sensors via I2C bus. It provides functionality for camera selection,
+    image capture, grid creation, and cycling between cameras.
     
     Parameters:
     -----------
     i2c_bus : int
-        I2C bus number (default: 11)
+        I2C bus number (default from CONFIG)
     mux_addr : int
-        I2C address of the multiplexer (default: 0x24)
+        I2C address of the multiplexer (default from CONFIG)
     camera_count : int
-        Number of cameras connected (default: 4)
+        Number of cameras connected (default from CONFIG)
     switch_delay : float
-        Delay in seconds after switching cameras (default: 0.1)
+        Delay in seconds after switching cameras (default from CONFIG)
+    test_mode : bool
+        If True, use mock objects instead of real hardware (default: False)
+        
+    Example:
+    --------
+    >>> cm = CameraManager()
+    >>> cm.select_camera(0)  # Select first camera
+    >>> image = cm.capture_image()  # Capture image from selected camera
+    >>> cm.cleanup()  # Clean up resources when done
     """
     
     # Camera multiplexer control commands
@@ -42,17 +66,20 @@ class CameraManager:
         'all': 0x00,  # Four-in-one mode (default)
     }
     
-    def __init__(self, i2c_bus=11, mux_addr=0x24, camera_count=4, switch_delay=0.1, test_mode=False):
-        self.i2c_bus = i2c_bus
-        self.mux_addr = mux_addr
-        self.camera_count = camera_count
-        self.switch_delay = switch_delay
+    def __init__(self, i2c_bus=None, mux_addr=None, camera_count=None, 
+                 switch_delay=None, test_mode=False):
+        # Use provided values or defaults from CONFIG
+        self.i2c_bus = i2c_bus if i2c_bus is not None else CONFIG["I2C_BUS"]
+        self.mux_addr = mux_addr if mux_addr is not None else CONFIG["MUX_ADDR"]
+        self.camera_count = camera_count if camera_count is not None else CONFIG["CAMERA_COUNT"]
+        self.switch_delay = switch_delay if switch_delay is not None else CONFIG["SWITCH_DELAY"]
+        
         self.current_camera = None
         self.picam = None
         self.lock = threading.Lock()
         self.is_cycling = False
         self.cycle_thread = None
-        self.cycle_interval = 1.0  # seconds between camera switches
+        self.cycle_interval = CONFIG["CYCLE_INTERVAL"]
         
         # Video and still configurations
         self.video_config = None
@@ -60,21 +87,36 @@ class CameraManager:
         
         # In test mode, we don't initialize real hardware
         self.test_mode = test_mode
+        self.bus = None
+        
         if not test_mode:
             try:
                 self.bus = smbus2.SMBus(self.i2c_bus)
                 logger.info(f"Initialized I2C bus {self.i2c_bus}")
             except Exception as e:
-                logger.error(f"Failed to initialize I2C bus: {e}")
+                logger.error(f"Failed to initialize I2C bus: {e}", exc_info=True)
                 raise
                 
-            self.initialize_camera()
-    
-    # Rotation method has been removed since it's no longer needed due to hardware changes
-    # Previously had _rotate_camera_image method here
+        self.initialize_camera()
     
     def initialize_camera(self, mock_picam=None):
-        """Initialize the Picamera2 instance and create configurations."""
+        """
+        Initialize the Picamera2 instance and create configurations.
+        
+        Parameters:
+        -----------
+        mock_picam : MagicMock, optional
+            Mock camera object for testing
+            
+        Returns:
+        --------
+        None
+        
+        Raises:
+        -------
+        Exception
+            If camera initialization fails
+        """
         try:
             # If we're in test mode or a mock was provided, use it
             if self.test_mode or mock_picam is not None:
@@ -90,13 +132,13 @@ class CameraManager:
             # Create base configurations with appropriate resolutions
             # Preview at 720p resolution with autofocus enabled
             self.video_config = self.picam.create_video_configuration(
-                main={"size": (1280, 720)},  # 720p for better preview quality
+                main={"size": CONFIG["VIDEO_RESOLUTION"]},
                 controls={"AfMode": controls.AfModeEnum.Continuous}  # Enable continuous autofocus
             )
             
             # Capture at high resolution with autofocus
             self.still_config = self.picam.create_still_configuration(
-                main={"size": (4056, 3040)},  # Full resolution
+                main={"size": CONFIG["STILL_RESOLUTION"]},
                 controls={"AfMode": controls.AfModeEnum.Auto}  # Enable one-time autofocus for captures
             )
             
@@ -109,7 +151,7 @@ class CameraManager:
             logger.info("Camera initialized in four-in-one mode for preview")
             
         except Exception as e:
-            logger.error(f"Failed to initialize camera: {e}")
+            logger.error(f"Failed to initialize camera: {e}", exc_info=True)
             raise
     
     def select_camera(self, camera_index, already_locked=False):
@@ -130,7 +172,7 @@ class CameraManager:
         """
         def _do_select_camera():
             try:
-                # All cameras are working now
+                # Check if camera index is valid
                 if camera_index not in self.CAMERA_COMMANDS:
                     logger.error(f"Invalid camera index: {camera_index}")
                     return False
@@ -143,23 +185,17 @@ class CameraManager:
                     try:
                         self.bus.write_byte_data(self.mux_addr, 0x24, command)
                         # Add additional delay after switching to prevent system freezes
-                        # This might help with Pi resource management during camera switching
-                        time.sleep(0.5)  # Increased from default 0.1
+                        time.sleep(self.switch_delay)
                     except Exception as e:
-                        logger.error(f"I2C communication error during camera select: {e}")
+                        logger.error(f"I2C communication error during camera select: {e}", exc_info=True)
                         return False
                 
                 logger.info(f"Selected camera: {camera_index}")
                 self.current_camera = camera_index
-                
-                # Allow time for the multiplexer to switch (simulated in test mode)
-                if not self.test_mode:
-                    time.sleep(self.switch_delay)
-                    
                 return True
                 
             except Exception as e:
-                logger.error(f"Failed to select camera {camera_index}: {e}")
+                logger.error(f"Failed to select camera {camera_index}: {e}", exc_info=True)
                 return False
         
         # If already_locked is True, we assume the lock is already acquired
@@ -170,27 +206,39 @@ class CameraManager:
             with self.lock:
                 return _do_select_camera()
     
-    def start_camera_cycle(self, interval=1.0):
+    def start_camera_cycle(self, interval=None):
         """
         Set preview to four-in-one mode for showing all cameras simultaneously.
-        The interval parameter is kept for API compatibility but is not used.
+        
+        Parameters:
+        -----------
+        interval : float, optional
+            Interval between camera switches (kept for API compatibility)
+            
+        Returns:
+        --------
+        None
         """
         # If already in cycling mode, do nothing
         if self.is_cycling:
             return
             
         # Set flag to indicate we're in four-in-one mode
-        self.cycle_interval = interval  # Keep for compatibility
+        self.cycle_interval = interval if interval is not None else CONFIG["CYCLE_INTERVAL"]
         self.is_cycling = True
         
         # Switch to four-in-one mode
         logger.info("Setting preview to four-in-one mode")
         self.select_camera('all')
-        
-        # No need for a thread anymore as we're not actually cycling
     
     def stop_camera_cycle(self):
-        """Switch from four-in-one mode to a single camera view."""
+        """
+        Switch from four-in-one mode to a single camera view.
+        
+        Returns:
+        --------
+        None
+        """
         # Set flag to indicate we're not in four-in-one mode
         self.is_cycling = False
         logger.info("Exited four-in-one preview mode")
@@ -212,6 +260,11 @@ class CameraManager:
         --------
         PIL.Image
             The captured image
+            
+        Raises:
+        -------
+        Exception
+            If image capture fails
         """
         with self.lock:
             was_cycling = self.is_cycling
@@ -219,11 +272,11 @@ class CameraManager:
                 self.stop_camera_cycle()
                 
             try:
+                # Force garbage collection before capture
+                gc.collect()
+                
                 if camera_index is not None:
                     self.select_camera(camera_index, already_locked=True)
-                
-                # All cameras are working now
-                # Default capture for all cameras
                 
                 # Handle test mode with a mock image
                 if self.test_mode:
@@ -239,18 +292,31 @@ class CameraManager:
                 self.picam.start()
                 
                 # Wait for camera to stabilize and focus
-                time.sleep(1.0)  # Longer delay to ensure proper focusing
+                time.sleep(CONFIG["STABILIZATION_DELAY"])
                 
                 # Capture to a PIL Image
                 logger.info("Capturing image")
-                buffer = self.picam.capture_array()
-                image = Image.fromarray(buffer)
-                
-                # Explicitly clean up intermediate large buffers
-                del buffer
-
-                # Add green cross in the center
-                self._add_center_cross(image)
+                try:
+                    buffer = self.picam.capture_array()
+                    image = Image.fromarray(buffer)
+                    
+                    # Explicitly clean up intermediate large buffers
+                    del buffer
+                    gc.collect()  # Force garbage collection after using large buffer
+                    
+                    # Add green cross in the center
+                    self._add_center_cross(image)
+                    
+                    # Ensure image is in RGB mode
+                    if image.mode == 'RGBA':
+                        logger.info("Converting image from RGBA to RGB")
+                        image = image.convert('RGB')
+                except Exception as capture_error:
+                    logger.error(f"Error during image capture: {capture_error}", exc_info=True)
+                    # Create a fallback error image
+                    image = Image.new('RGB', (640, 480), color='black')
+                    draw = ImageDraw.Draw(image)
+                    draw.text((20, 240), f"Capture error: {str(capture_error)}", fill=(255, 0, 0))
                 
                 # Switch back to video config (includes continuous autofocus)
                 logger.info("Switching back to video config")
@@ -258,26 +324,27 @@ class CameraManager:
                 self.picam.configure(self.video_config)
                 self.picam.start()
                 
-                # Ensure image is in RGB mode
-                if image.mode == 'RGBA':
-                    logger.info("Converting image from RGBA to RGB")
-                    image = image.convert('RGB')
-                
                 return image
                 
             except Exception as e:
-                logger.error(f"Failed to capture image: {e}")
+                logger.error(f"Failed to capture image: {e}", exc_info=True)
                 # Make sure we get back to video mode
                 try:
                     self.picam.stop()
                     self.picam.configure(self.video_config)
                     self.picam.start()
                 except Exception as e2:
-                    logger.error(f"Failed to reset camera configuration: {e2}")
-                raise
+                    logger.error(f"Failed to reset camera configuration: {e2}", exc_info=True)
+                
+                # Return an error image instead of raising exception
+                error_img = Image.new('RGB', (640, 480), color='black')
+                draw = ImageDraw.Draw(error_img)
+                draw.text((20, 240), f"Error: {str(e)}", fill=(255, 0, 0))
+                return error_img
             finally:
                 if was_cycling:
                     self.start_camera_cycle(self.cycle_interval)
+                gc.collect()  # Final garbage collection
     
     def capture_all_cameras(self):
         """
@@ -286,7 +353,7 @@ class CameraManager:
         Returns:
         --------
         list
-            List of captured images (PIL.Image)
+            List of captured images (PIL.Image objects)
         """
         logger.info("Starting to capture from all cameras")
         was_cycling = self.is_cycling
@@ -296,6 +363,9 @@ class CameraManager:
         images = []
         
         try:
+            # Force garbage collection before starting capture sequence
+            gc.collect()
+            
             # In test mode, create all test images at once
             if self.test_mode:
                 logger.info("Test mode: generating test images for all cameras")
@@ -317,24 +387,21 @@ class CameraManager:
                 self.picam.start()
                 
                 # Wait for camera to stabilize and focus
-                logger.info("Waiting for camera to stabilize (1.0s)")
-                time.sleep(1.0)  # Longer delay to ensure proper focusing
+                logger.info(f"Waiting for camera to stabilize ({CONFIG['STABILIZATION_DELAY']}s)")
+                time.sleep(CONFIG["STABILIZATION_DELAY"])
                 
                 for i in range(self.camera_count):
                     logger.info(f"Capturing from camera {i}")
                     
-                    # All cameras are working now - no need for special handling
-                    
                     # Select camera without using capture_image to avoid nested locks
                     self.select_camera(i, already_locked=True)
                     logger.info(f"Camera {i} selected, waiting for stabilization (0.5s)")
-                    time.sleep(0.5)  # Increased delay after selection for better stabilization
+                    time.sleep(self.switch_delay)
                     
                     # Capture to a PIL Image
                     logger.info(f"Capturing image from camera {i}")
                     try:
-                        # Add garbage collection before capture to free memory
-                        import gc
+                        # Force garbage collection before capture for memory management
                         gc.collect()
                         
                         # Capture the image
@@ -380,18 +447,21 @@ class CameraManager:
             logger.error(f"Unexpected error in capture_all_cameras: {e}", exc_info=True)
             # If we have an exception, try to return any images we've captured so far
             if not images:
-                # If no images captured, create at least one error image for display
-                error_img = Image.new('RGB', (640, 480), color='black')
-                draw = ImageDraw.Draw(error_img)
-                draw.text((20, 240), f"Capture error: {str(e)}", fill=(255, 0, 0))
+                # If no images captured, create fallback error images for display
                 for i in range(self.camera_count):
-                    images.append(error_img.copy())
+                    error_img = Image.new('RGB', (640, 480), color='black')
+                    draw = ImageDraw.Draw(error_img)
+                    draw.text((20, 240), f"Capture error: {str(e)}", fill=(255, 0, 0))
+                    images.append(error_img)
             return images
         finally:
             # Make absolutely sure we go back to cycling if it was active before
             if was_cycling:
                 logger.info("Restoring cycling mode after capture")
                 self.start_camera_cycle(self.cycle_interval)
+            
+            # Final garbage collection to free memory
+            gc.collect()
     
     def create_grid_image(self, images):
         """
@@ -406,43 +476,54 @@ class CameraManager:
         --------
         PIL.Image
             Combined 2x2 grid image
+            
+        Raises:
+        -------
+        ValueError
+            If not given exactly 4 images
+        Exception
+            If grid creation fails
         """
         if len(images) != 4:
             raise ValueError(f"Expected 4 images, got {len(images)}")
         
         logger.info(f"Creating grid image from {len(images)} images")
         
-        # Make sure all images are in RGB mode and same size
-        rgb_images = []
-        for i, img in enumerate(images):
-            logger.info(f"Processing image {i} with mode {img.mode} and size {img.size}")
-            
-            # Convert to RGB if needed
-            if img.mode == 'RGBA':
-                logger.info(f"Converting image {i} from RGBA to RGB")
-                img = img.convert('RGB')
-            elif img.mode != 'RGB':
-                logger.info(f"Converting image {i} from {img.mode} to RGB")
-                img = img.convert('RGB')
-            
-            rgb_images.append(img)
-        
-        # Get the most common size (in case images have different sizes)
-        sizes = [img.size for img in rgb_images]
-        logger.info(f"Image sizes: {sizes}")
-        
-        # Use the first image's size as reference
-        width, height = rgb_images[0].size
-        logger.info(f"Using dimensions for grid: {width}x{height}")
-        
-        # Create a new image with 2x2 grid layout
-        grid_width, grid_height = width * 2, height * 2
-        logger.info(f"Creating new grid image with dimensions {grid_width}x{grid_height}")
-        grid_image = Image.new('RGB', (grid_width, grid_height))
-        
-        # Paste images into grid, resizing if needed
-        logger.info("Pasting images into grid")
         try:
+            # Force garbage collection before grid creation
+            gc.collect()
+            
+            # Make sure all images are in RGB mode and same size
+            rgb_images = []
+            for i, img in enumerate(images):
+                logger.info(f"Processing image {i} with mode {img.mode} and size {img.size}")
+                
+                # Convert to RGB if needed
+                if img.mode == 'RGBA':
+                    logger.info(f"Converting image {i} from RGBA to RGB")
+                    img = img.convert('RGB')
+                elif img.mode != 'RGB':
+                    logger.info(f"Converting image {i} from {img.mode} to RGB")
+                    img = img.convert('RGB')
+                
+                rgb_images.append(img)
+            
+            # Get the most common size (in case images have different sizes)
+            sizes = [img.size for img in rgb_images]
+            logger.info(f"Image sizes: {sizes}")
+            
+            # Use the first image's size as reference
+            width, height = rgb_images[0].size
+            logger.info(f"Using dimensions for grid: {width}x{height}")
+            
+            # Create a new image with 2x2 grid layout
+            grid_width, grid_height = width * 2, height * 2
+            logger.info(f"Creating new grid image with dimensions {grid_width}x{grid_height}")
+            grid_image = Image.new('RGB', (grid_width, grid_height))
+            
+            # Paste images into grid, resizing if needed
+            logger.info("Pasting images into grid")
+            
             # Top-left image (camera 0)
             if rgb_images[0].size != (width, height):
                 logger.info(f"Resizing image 0 from {rgb_images[0].size} to {width}x{height}")
@@ -468,15 +549,24 @@ class CameraManager:
             grid_image.paste(rgb_images[3], (width, height))
             
             logger.info("All images pasted into grid successfully")
+            
+            # Force garbage collection after grid creation
+            gc.collect()
+            
+            logger.info(f"Grid image created successfully with size {grid_image.size}")
+            return grid_image
+            
         except Exception as e:
-            logger.error(f"Error pasting images into grid: {e}", exc_info=True)
-            raise
-        
-        logger.info(f"Grid image created successfully with size {grid_image.size}")
-        return grid_image
+            logger.error(f"Error creating grid image: {e}", exc_info=True)
+            # Create a fallback grid image with error message
+            fallback_img = Image.new('RGB', (1280, 960), color='black')
+            draw = ImageDraw.Draw(fallback_img)
+            draw.text((640, 480), f"Grid creation error: {str(e)}", fill=(255, 0, 0))
+            return fallback_img
     
     def _draw_cross_at(self, image, x, y, size=None):
-        """Draw a green cross at the specified location.
+        """
+        Draw a green cross at the specified location.
         
         Parameters:
         -----------
@@ -489,35 +579,59 @@ class CameraManager:
         size : int or None
             Size of cross arms (proportional to image if None)
         """
-        draw = ImageDraw.Draw(image)
-        if size is None:
-            # Make cross size proportional to image, but smaller than the default cross
-            size = min(image.width, image.height) // 30
+        try:
+            draw = ImageDraw.Draw(image)
+            if size is None:
+                # Make cross size proportional to image, but smaller than the default cross
+                size = min(image.width, image.height) // 30
+                
+            # Draw horizontal line
+            draw.line(
+                (x - size, y, x + size, y),
+                fill=(0, 255, 0),  # Green color (R,G,B)
+                width=1            # Single-pixel thin
+            )
             
-        # Draw horizontal line
-        draw.line(
-            (x - size, y, x + size, y),
-            fill=(0, 255, 0),  # Green color (R,G,B)
-            width=1            # Single-pixel thin
-        )
-        
-        # Draw vertical line
-        draw.line(
-            (x, y - size, x, y + size),
-            fill=(0, 255, 0),  # Green color (R,G,B)
-            width=1            # Single-pixel thin
-        )
+            # Draw vertical line
+            draw.line(
+                (x, y - size, x, y + size),
+                fill=(0, 255, 0),  # Green color (R,G,B)
+                width=1            # Single-pixel thin
+            )
+        except Exception as e:
+            logger.error(f"Error drawing cross: {e}", exc_info=True)
+            # Continue without drawing cross - non-critical feature
     
     def _add_center_cross(self, image):
-        """Add a green cross in the center of the image."""
-        width, height = image.size
-        center_x, center_y = width // 2, height // 2
-        size = min(width, height) // 20  # Cross size proportional to image
+        """
+        Add a green cross in the center of the image.
         
-        self._draw_cross_at(image, center_x, center_y, size)
+        Parameters:
+        -----------
+        image : PIL.Image
+            Image to add the cross to
+        """
+        try:
+            width, height = image.size
+            center_x, center_y = width // 2, height // 2
+            size = min(width, height) // 20  # Cross size proportional to image
+            
+            self._draw_cross_at(image, center_x, center_y, size)
+        except Exception as e:
+            logger.error(f"Error adding center cross: {e}", exc_info=True)
+            # Continue without adding cross - non-critical feature
     
     def cleanup(self):
-        """Clean up resources."""
+        """
+        Clean up resources used by the camera manager.
+        
+        This method should be called when the object is no longer needed
+        to ensure proper release of hardware resources.
+        
+        Returns:
+        --------
+        None
+        """
         try:
             # Always stop cycling first
             if self.is_cycling:
@@ -528,13 +642,20 @@ class CameraManager:
                 if hasattr(self, 'picam') and self.picam:
                     try:
                         self.picam.stop()
+                        logger.info("Camera stopped successfully")
                     except Exception as e:
-                        logger.warning(f"Error stopping picam: {e}")
+                        logger.warning(f"Error stopping picam: {e}", exc_info=True)
                     
                 if hasattr(self, 'bus') and self.bus:
                     try:
                         self.bus.close()
+                        logger.info("I2C bus closed successfully")
                     except Exception as e:
-                        logger.warning(f"Error closing bus: {e}")
+                        logger.warning(f"Error closing bus: {e}", exc_info=True)
+                        
+            # Force final garbage collection
+            gc.collect()
+            logger.info("Camera manager cleanup completed")
+            
         except Exception as e:
-            logger.error(f"Error during cleanup: {e}")
+            logger.error(f"Error during cleanup: {e}", exc_info=True)

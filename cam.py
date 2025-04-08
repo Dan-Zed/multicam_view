@@ -7,7 +7,7 @@ import traceback
 import gc  # for garbage collection
 import psutil  # for memory monitoring - you may need to install this with pip/poetry
 from PIL import Image, ImageDraw
-from camera_manager import CameraManager
+from camera_manager import CameraManager, CONFIG
 
 # Configure logging
 logging.basicConfig(
@@ -15,6 +15,16 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger('multicam_app')
+
+# Application configuration
+APP_CONFIG = {
+    "FRAME_RATE_SLEEP": 0.1,  # 10 fps
+    "FRAME_FREEZE_THRESHOLD": 5.0,  # seconds to detect camera freeze
+    "ERROR_SLEEP": 1.0,  # sleep time after error
+    "CYCLE_INTERVAL": 2.0,  # seconds between camera cycling
+    "DIR_PERMISSIONS": 0o755,  # directory permissions
+    "FILE_PERMISSIONS": 0o644,  # file permissions
+}
 
 app = Flask(__name__)
 
@@ -24,34 +34,45 @@ app.config['CAPTURE_FOLDER'] = captures_dir
 logger.info(f"Using captures directory: {captures_dir}")
 
 # Create captures directory if it doesn't exist
-if not os.path.exists(app.config['CAPTURE_FOLDER']):
-    logger.info(f"Creating captures directory: {app.config['CAPTURE_FOLDER']}")
-    os.makedirs(app.config['CAPTURE_FOLDER'])
-    # Ensure directory is accessible
-    try:
-        os.chmod(app.config['CAPTURE_FOLDER'], 0o755)
+try:
+    if not os.path.exists(app.config['CAPTURE_FOLDER']):
+        logger.info(f"Creating captures directory: {app.config['CAPTURE_FOLDER']}")
+        os.makedirs(app.config['CAPTURE_FOLDER'])
+        # Ensure directory is accessible
+        os.chmod(app.config['CAPTURE_FOLDER'], APP_CONFIG["DIR_PERMISSIONS"])
         logger.info(f"Set permissions on captures directory")
-    except Exception as e:
-        logger.warning(f"Could not set permissions on captures directory: {e}")
-else:
-    logger.info(f"Captures directory exists: {app.config['CAPTURE_FOLDER']}")
+    else:
+        logger.info(f"Captures directory exists: {app.config['CAPTURE_FOLDER']}")
+except Exception as e:
+    logger.error(f"Could not set up captures directory: {e}", exc_info=True)
+    # Continue anyway - the application will handle missing directory later
 
 # Initialize camera manager
+camera_manager = None
 try:
     camera_manager = CameraManager(
-        i2c_bus=11,
-        mux_addr=0x24,
-        camera_count=4,
-        switch_delay=0.5  # Increased from 0.1 to allow more time for switching
+        i2c_bus=CONFIG["I2C_BUS"],
+        mux_addr=CONFIG["MUX_ADDR"],
+        camera_count=CONFIG["CAMERA_COUNT"],
+        switch_delay=CONFIG["SWITCH_DELAY"]
     )
-    # Start cycling through cameras every 2 seconds (default)
-    camera_manager.start_camera_cycle(interval=2.0)
+    # Start cycling through cameras 
+    camera_manager.start_camera_cycle(interval=APP_CONFIG["CYCLE_INTERVAL"])
+    logger.info("Camera manager initialized successfully")
 except Exception as e:
-    logger.error(f"Failed to initialize camera manager: {e}")
+    logger.error(f"Failed to initialize camera manager: {e}", exc_info=True)
     camera_manager = None
+    logger.warning("Application will continue without camera functionality")
 
 def get_next_capture_number():
-    """Get the next capture number for sequential file naming."""
+    """
+    Get the next capture number for sequential file naming.
+    
+    Returns:
+    --------
+    int
+        Next sequential capture number
+    """
     try:
         existing_files = [f for f in os.listdir(app.config['CAPTURE_FOLDER']) 
                         if f.startswith('capture_') and f.endswith('.jpg')]
@@ -75,7 +96,14 @@ def get_next_capture_number():
         return int(time.time())
 
 def gen_frames():
-    """Generate frames for the video feed."""
+    """
+    Generate frames for the video feed.
+    
+    Yields:
+    -------
+    bytes
+        JPEG image data with multipart/x-mixed-replace formatting
+    """
     if not camera_manager:
         # If camera manager failed to initialize, return a blank frame
         blank_img = Image.new('RGB', (640, 480), color='black')
@@ -89,12 +117,15 @@ def gen_frames():
         return
 
     # Initialize frame tracking
-    if not hasattr(gen_frames, 'frame_count'):
-        gen_frames.frame_count = 0
-        gen_frames.last_frame_time = time.time()
+    frame_count = 0
+    last_frame_time = time.time()
 
     while True:
         try:
+            # Force garbage collection periodically
+            if frame_count % 30 == 0:  # Every 30 frames
+                gc.collect()
+                
             # Capture a frame with the current camera
             buffer = camera_manager.picam.capture_array()
             img = Image.fromarray(buffer)
@@ -116,20 +147,10 @@ def gen_frames():
                 quadrant_height = height // 2
                 
                 # Add a cross to the center of each quadrant
-                # Top-left quadrant
                 camera_manager._draw_cross_at(img, quadrant_width // 2, quadrant_height // 2)
-                
-                # Top-right quadrant
                 camera_manager._draw_cross_at(img, quadrant_width + quadrant_width // 2, quadrant_height // 2)
-                
-                # Bottom-left quadrant
                 camera_manager._draw_cross_at(img, quadrant_width // 2, quadrant_height + quadrant_height // 2)
-                
-                # Bottom-right quadrant
                 camera_manager._draw_cross_at(img, quadrant_width + quadrant_width // 2, quadrant_height + quadrant_height // 2)
-            
-            # Rotation removed - hardware changes make it unnecessary
-            # (previously had rotation code here for cameras 0 and 1)
             
             # Convert to JPEG bytes (ensuring RGB mode)
             if img.mode == 'RGBA':
@@ -139,12 +160,9 @@ def gen_frames():
             img_io.seek(0)
             
             # Update frame counter
-            if not hasattr(gen_frames, 'frame_count'):
-                gen_frames.frame_count = 1
-                gen_frames.last_frame_time = time.time()
-            else:
-                gen_frames.frame_count += 1
+            frame_count += 1
 
+            # Yield the frame
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + img_io.getvalue() + b'\r\n')
             
@@ -154,26 +172,19 @@ def gen_frames():
             del img_io
             
             # Sleep briefly to control frame rate and reduce CPU usage
-            time.sleep(0.1)  # Back to default - 10 fps
+            time.sleep(APP_CONFIG["FRAME_RATE_SLEEP"])
             
             # Periodically check if we need to restart the camera
-            if hasattr(gen_frames, 'frame_count') and gen_frames.frame_count % 100 == 0:
-                if time.time() - gen_frames.last_frame_time > 5.0:  # If more than 5 seconds between frames
+            if frame_count % 100 == 0:  # Every 100 frames
+                if time.time() - last_frame_time > APP_CONFIG["FRAME_FREEZE_THRESHOLD"]:
                     logger.warning("Detected potential camera freeze - no restart logic implemented")
-                    # Example restart code (commented out to avoid syntax issues):
-                    # camera_manager = CameraManager(
-                    #     i2c_bus=11,
-                    #     mux_addr=0x24,
-                    #     camera_count=4,
-                    #     switch_delay=0.5
-                    # )
-                    # camera_manager.start_camera_cycle(interval=2.0)
+                    # Future restart logic could be implemented here
             
             # Update last frame time
-            gen_frames.last_frame_time = time.time()
+            last_frame_time = time.time()
             
         except Exception as e:
-            logger.error(f"Error generating frame: {e}")
+            logger.error(f"Error generating frame: {e}", exc_info=True)
             # Return an error frame instead of just logging
             try:
                 error_img = Image.new('RGB', (640, 480), color='black')
@@ -185,23 +196,49 @@ def gen_frames():
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + img_io.getvalue() + b'\r\n')
             except Exception as e2:
-                logger.error(f"Error creating error frame: {e2}")
-            time.sleep(1.0)  # Longer sleep on error
+                logger.error(f"Error creating error frame: {e2}", exc_info=True)
+            
+            # Force garbage collection after error
+            gc.collect()
+            
+            # Sleep longer on error to prevent rapid error loops
+            time.sleep(APP_CONFIG["ERROR_SLEEP"])
 
 @app.route('/')
 def index():
-    """Render the main page."""
-    return render_template('index.html', camera_count=4)
+    """
+    Render the main page.
+    
+    Returns:
+    --------
+    str
+        Rendered HTML template
+    """
+    return render_template('index.html', camera_count=CONFIG["CAMERA_COUNT"])
 
 @app.route('/video_feed')
 def video_feed():
-    """Stream video feed from the cameras."""
+    """
+    Stream video feed from the cameras.
+    
+    Returns:
+    --------
+    Response
+        Streaming response with MJPEG content
+    """
     return Response(gen_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/capture')
 def capture():
-    """Capture images from all cameras."""
+    """
+    Capture images from all cameras.
+    
+    Returns:
+    --------
+    Response
+        JSON response with capture results
+    """
     if not camera_manager:
         logger.error("Cannot capture: camera manager not initialized")
         return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
@@ -221,14 +258,15 @@ def capture():
         # Check and ensure capture directory exists
         capture_dir = app.config['CAPTURE_FOLDER']
         logger.info(f"Checking capture directory: {capture_dir}")
-        if not os.path.exists(capture_dir):
-            logger.warning(f"Capture directory {capture_dir} does not exist, creating it")
-            os.makedirs(capture_dir, exist_ok=True)
-            try:
-                os.chmod(capture_dir, 0o755)
+        try:
+            if not os.path.exists(capture_dir):
+                logger.warning(f"Capture directory {capture_dir} does not exist, creating it")
+                os.makedirs(capture_dir, exist_ok=True)
+                os.chmod(capture_dir, APP_CONFIG["DIR_PERMISSIONS"])
                 logger.info(f"Set permissions on capture directory {capture_dir}")
-            except Exception as e:
-                logger.warning(f"Could not set permissions on {capture_dir}: {e}")
+        except Exception as e:
+            logger.error(f"Could not set up capture directory: {e}", exc_info=True)
+            return jsonify({'success': False, 'error': f'Failed to create captures directory: {str(e)}'}), 500
         
         # Capture from all cameras
         logger.info("Capturing images from all cameras")
@@ -260,7 +298,7 @@ def capture():
                     
                     # Ensure file permissions
                     try:
-                        os.chmod(filepath, 0o644)
+                        os.chmod(filepath, APP_CONFIG["FILE_PERMISSIONS"])
                     except Exception as e:
                         logger.warning(f"Could not set permissions on {filepath}: {e}")
                     
@@ -277,6 +315,7 @@ def capture():
         
         # Create and save combined grid image
         logger.info("Creating grid image")
+        grid_filename = None
         try:
             grid_img = camera_manager.create_grid_image(images)
             grid_filename = f'capture_{n}_grid.jpg'
@@ -296,7 +335,7 @@ def capture():
                 
                 # Ensure file permissions
                 try:
-                    os.chmod(grid_filepath, 0o644)
+                    os.chmod(grid_filepath, APP_CONFIG["FILE_PERMISSIONS"])
                 except Exception as e:
                     logger.warning(f"Could not set permissions on {grid_filepath}: {e}")
             else:
@@ -315,7 +354,7 @@ def capture():
             new_files = [f for f in dir_contents if f'capture_{n}' in f]
             logger.info(f"New files created: {new_files}")
         except Exception as e:
-            logger.error(f"Error listing directory contents: {e}")
+            logger.error(f"Error listing directory contents: {e}", exc_info=True)
         
         # Force GC again and check memory usage
         gc.collect()
@@ -336,7 +375,14 @@ def capture():
 
 @app.route('/latest_capture')
 def latest_capture():
-    """Get the latest capture's grid image filename."""
+    """
+    Get the latest capture's grid image filename.
+    
+    Returns:
+    --------
+    Response
+        JSON response with latest capture information
+    """
     try:
         logger.info("Looking for latest capture")
         captures_folder = app.config['CAPTURE_FOLDER']
@@ -407,17 +453,36 @@ def latest_capture():
 
 @app.route('/captures/<path:filename>')
 def serve_capture(filename):
-    """Serve capture images."""
+    """
+    Serve capture images.
+    
+    Parameters:
+    -----------
+    filename : str
+        Name of the file to serve
+    
+    Returns:
+    --------
+    Response
+        File response or JSON error
+    """
     logger.info(f"Request to serve capture file: {filename}")
     try:
         return send_from_directory(app.config['CAPTURE_FOLDER'], filename)
     except Exception as e:
-        logger.error(f"Error serving capture file {filename}: {e}")
+        logger.error(f"Error serving capture file {filename}: {e}", exc_info=True)
         return jsonify({'error': 'File not found'}), 404
 
 @app.route('/camera_info')
 def camera_info():
-    """Get information about the current camera setup."""
+    """
+    Get information about the current camera setup.
+    
+    Returns:
+    --------
+    Response
+        JSON response with camera information
+    """
     if not camera_manager:
         return jsonify({
             'success': False,
@@ -434,7 +499,19 @@ def camera_info():
 
 @app.route('/select_camera/<int:camera_id>')
 def select_camera(camera_id):
-    """Manually select a specific camera."""
+    """
+    Manually select a specific camera.
+    
+    Parameters:
+    -----------
+    camera_id : int
+        ID of the camera to select
+    
+    Returns:
+    --------
+    Response
+        JSON response with selection result
+    """
     if not camera_manager:
         return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
         
@@ -456,12 +533,19 @@ def select_camera(camera_id):
             'was_cycling': was_cycling
         })
     except Exception as e:
-        logger.error(f"Error selecting camera: {e}")
+        logger.error(f"Error selecting camera: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/toggle_cycle')
 def toggle_cycle():
-    """Toggle camera cycling on/off."""
+    """
+    Toggle camera cycling on/off.
+    
+    Returns:
+    --------
+    Response
+        JSON response with cycling status
+    """
     if not camera_manager:
         return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
         
@@ -470,7 +554,7 @@ def toggle_cycle():
             camera_manager.stop_camera_cycle()
             status = 'stopped'
         else:
-            camera_manager.start_camera_cycle()
+            camera_manager.start_camera_cycle(APP_CONFIG["CYCLE_INTERVAL"])
             status = 'started'
             
         return jsonify({
@@ -479,12 +563,19 @@ def toggle_cycle():
             'status': status
         })
     except Exception as e:
-        logger.error(f"Error toggling camera cycle: {e}")
+        logger.error(f"Error toggling camera cycle: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/debug/captures')
 def debug_captures():
-    """Debug route to list captures directory contents."""
+    """
+    Debug route to list captures directory contents.
+    
+    Returns:
+    --------
+    Response
+        JSON response with directory contents
+    """
     try:
         capture_dir = app.config['CAPTURE_FOLDER']
         logger.info(f"Listing contents of {capture_dir}")
@@ -531,7 +622,14 @@ def debug_captures():
 
 @app.route('/debug/test_capture')
 def debug_test_capture():
-    """Debug route to test capturing and saving a single image."""
+    """
+    Debug route to test capturing and saving a single image.
+    
+    Returns:
+    --------
+    Response
+        JSON response with test capture result
+    """
     if not camera_manager:
         return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
         
@@ -573,7 +671,14 @@ def debug_test_capture():
 
 @app.route('/debug/test_capture_pipeline')
 def debug_test_capture_pipeline():
-    """Debug route to test the entire capture pipeline."""
+    """
+    Debug route to test the entire capture pipeline.
+    
+    Returns:
+    --------
+    Response
+        JSON response with pipeline test results
+    """
     if not camera_manager:
         return jsonify({'success': False, 'error': 'Camera manager not initialized'}), 500
         
@@ -650,8 +755,15 @@ def debug_test_capture_pipeline():
 
 @app.route('/debug')
 def debug_index():
-    """Render the debug page."""
-    return render_template('debug_index.html', camera_count=4)
+    """
+    Render the debug page.
+    
+    Returns:
+    --------
+    str
+        Rendered HTML template
+    """
+    return render_template('debug_index.html', camera_count=CONFIG["CAMERA_COUNT"])
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

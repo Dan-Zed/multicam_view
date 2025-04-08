@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
 Startup script for multicam view application.
+
+This script initializes the application, ensures required directories exist,
+and starts the Flask web server.
 """
 import logging
 import os
 import sys
 import time
 from flask import Flask
-from cam import app
+from cam import app, APP_CONFIG
 
 # Configure logging
 logging.basicConfig(
@@ -21,7 +24,23 @@ logging.basicConfig(
 logger = logging.getLogger('multicam_runner')
 
 def main():
-    """Start the multicam web application."""
+    """
+    Start the multicam web application.
+    
+    This function:
+    1. Ensures the captures directory exists and has proper permissions
+    2. Configures the Flask app with the appropriate paths
+    3. Starts the web server on the specified host and port
+    
+    Returns:
+    --------
+    None
+    
+    Raises:
+    -------
+    SystemExit
+        If a critical error occurs during startup
+    """
     try:
         logger.info("Starting multicam view application")
         
@@ -33,12 +52,12 @@ def main():
             if not os.path.exists(captures_dir):
                 logger.info(f"Creating captures directory: {captures_dir}")
                 os.makedirs(captures_dir, exist_ok=True)
-                os.chmod(captures_dir, 0o755)  # Ensure proper permissions
+                os.chmod(captures_dir, APP_CONFIG["DIR_PERMISSIONS"])
                 logger.info(f"Created captures directory: {captures_dir}")
             else:
                 logger.info(f"Captures directory already exists: {captures_dir}")
                 # Still ensure permissions
-                os.chmod(captures_dir, 0o755)
+                os.chmod(captures_dir, APP_CONFIG["DIR_PERMISSIONS"])
             
             # List directory contents
             if os.path.exists(captures_dir):
@@ -50,10 +69,23 @@ def main():
                 logger.error(f"Captures directory still does not exist after creation attempt: {captures_dir}")
         except Exception as e:
             logger.error(f"Error setting up captures directory: {e}", exc_info=True)
-            # Continue anyway - we'll attempt to create it again when needed
+            logger.warning("Continuing without guaranteed capture directory - it will be attempted again during runtime")
         
         # Configure Flask app with proper capture directory
         app.config['CAPTURE_FOLDER'] = captures_dir
+        
+        # Ensure logs directory exists
+        logs_dir = os.path.join(os.path.dirname(__file__), 'logs')
+        try:
+            if not os.path.exists(logs_dir):
+                logger.info(f"Creating logs directory: {logs_dir}")
+                os.makedirs(logs_dir, exist_ok=True)
+                os.chmod(logs_dir, APP_CONFIG["DIR_PERMISSIONS"])
+            else:
+                logger.info(f"Logs directory already exists: {logs_dir}")
+        except Exception as e:
+            logger.error(f"Error setting up logs directory: {e}", exc_info=True)
+            logger.warning("Continuing without logs directory")
         
         # Start the Flask app
         logger.info("Starting web server on 0.0.0.0:8000")
