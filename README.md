@@ -9,6 +9,7 @@ A web application for controlling and streaming from multiple cameras connected 
 - Switch between cameras in real-time
 - View all cameras simultaneously in four-in-one mode
 - Create combined 2x2 grid views from all cameras
+- Center-crop images to 1775 x 1160 pixels for consistent grid composition
 - Center crosshairs on all camera views for alignment
 - Debug interface for troubleshooting
 - Robust error handling and memory management
@@ -32,7 +33,7 @@ The application uses configuration dictionaries to manage settings:
 - Camera settings in `camera_manager.py`:
   - I2C bus and multiplexer address
   - Camera count and switch delay
-  - Video and still resolution
+  - Video, still, and crop resolutions
   - Stabilization delay
 
 - Application settings in `cam.py`:

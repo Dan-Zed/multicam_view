@@ -24,6 +24,7 @@ CONFIG = {
     "STABILIZATION_DELAY": 1.0,  # Delay for camera stabilization (seconds)
     "VIDEO_RESOLUTION": (1280, 720),  # 720p for video streaming
     "STILL_RESOLUTION": (4056, 3040),  # Full resolution for still captures
+    "CROP_RESOLUTION": (1775, 1160),  # Center cropped dimensions for grid composition
     "CYCLE_INTERVAL": 1.0,  # Default seconds between camera cycles
 }
 
@@ -620,6 +621,59 @@ class CameraManager:
         except Exception as e:
             logger.error(f"Error adding center cross: {e}", exc_info=True)
             # Continue without adding cross - non-critical feature
+            
+    def center_crop_image(self, image, target_width=None, target_height=None):
+        """
+        Center crop an image to the specified dimensions.
+        
+        Parameters:
+        -----------
+        image : PIL.Image
+            Image to crop
+        target_width : int or None
+            Target width for the cropped image (default from CONFIG)
+        target_height : int or None
+            Target height for the cropped image (default from CONFIG)
+            
+        Returns:
+        --------
+        PIL.Image
+            Center cropped image
+            
+        Notes:
+        ------
+        If the target dimensions are larger than the original image,
+        the original image will be returned unchanged.
+        """
+        try:
+            # Use default from CONFIG if not specified
+            if target_width is None or target_height is None:
+                target_width, target_height = CONFIG["CROP_RESOLUTION"]
+                
+            # Get current dimensions
+            orig_width, orig_height = image.size
+            logger.info(f"Center cropping image from {orig_width}x{orig_height} to {target_width}x{target_height}")
+            
+            # If target dimensions are larger than original, return original
+            if target_width >= orig_width or target_height >= orig_height:
+                logger.warning(f"Target dimensions {target_width}x{target_height} are larger than original {orig_width}x{orig_height}. Not cropping.")
+                return image
+            
+            # Calculate cropping box (left, upper, right, lower)
+            left = (orig_width - target_width) // 2
+            top = (orig_height - target_height) // 2
+            right = left + target_width
+            bottom = top + target_height
+            
+            # Crop the image
+            cropped_image = image.crop((left, top, right, bottom))
+            logger.info(f"Image successfully cropped to {target_width}x{target_height}")
+            
+            return cropped_image
+        except Exception as e:
+            logger.error(f"Error center cropping image: {e}", exc_info=True)
+            # Return original image in case of error
+            return image
     
     def cleanup(self):
         """

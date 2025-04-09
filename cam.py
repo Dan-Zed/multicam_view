@@ -317,7 +317,30 @@ def capture():
         logger.info("Creating grid image")
         grid_filename = None
         try:
-            grid_img = camera_manager.create_grid_image(images)
+            # Center crop images for grid composition
+            logger.info("Center cropping images for grid composition")
+            cropped_images = []
+            for i, img in enumerate(images):
+                try:
+                    # Force garbage collection before cropping
+                    gc.collect()
+                    
+                    # Apply center cropping to each image
+                    cropped_img = camera_manager.center_crop_image(img)
+                    cropped_images.append(cropped_img)
+                    
+                    # Ensure we're not keeping unnecessary references
+                    # (The original images are already saved to disk)
+                    if i < len(images) - 1:  # Keep last image reference for error case
+                        images[i] = None
+                        gc.collect()
+                except Exception as crop_error:
+                    logger.error(f"Error cropping image {i}: {crop_error}", exc_info=True)
+                    # Use original image if cropping fails
+                    cropped_images.append(img)
+            
+            # Create grid image using cropped images
+            grid_img = camera_manager.create_grid_image(cropped_images)
             grid_filename = f'capture_{n}_grid.jpg'
             grid_filepath = os.path.join(capture_dir, grid_filename)
             logger.info(f"Saving grid image to {grid_filepath}")
@@ -720,8 +743,20 @@ def debug_test_capture_pipeline():
         logger.info("Test pipeline: capturing images from all cameras")
         images = camera_manager.capture_all_cameras()
         
+        # Step 5.5: Test center cropping images
+        logger.info("Test pipeline: center cropping images")
+        cropped_images = []
+        for i, img in enumerate(images):
+            # Apply center cropping and practice memory management
+            cropped_img = camera_manager.center_crop_image(img)
+            cropped_images.append(cropped_img)
+            # Free memory by removing reference to original
+            if i < len(images) - 1:  # Keep last image reference for error case
+                images[i] = None
+                gc.collect()
+        
         logger.info("Test pipeline: creating grid image")
-        grid_img = camera_manager.create_grid_image(images)
+        grid_img = camera_manager.create_grid_image(cropped_images)
         
         grid_filename = f'test_pipeline_grid_{int(time.time())}.jpg'
         grid_filepath = os.path.join(capture_dir, grid_filename)

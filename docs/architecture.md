@@ -62,6 +62,7 @@ CameraManager
 ├── create_grid_image(images)
 ├── _draw_cross_at(image, x, y, size)
 ├── _add_center_cross(image)
+├── center_crop_image(image, target_width, target_height)
 └── cleanup()
 ```
 
@@ -237,6 +238,7 @@ The application implements a multi-layered error handling approach:
 
 - **Video Configuration**: 720p resolution (1280x720) with continuous autofocus for reliable streaming
 - **Still Configuration**: High resolution (4056x3040) with one-time autofocus for detailed captures
+- **Crop Configuration**: Center cropped (1775x1160) for grid composition with consistent transitions between images
 
 ### Camera Multiplexer Commands:
 
@@ -358,6 +360,7 @@ CONFIG = {
     # Video and still resolutions
     "VIDEO_RESOLUTION": (1280, 720),
     "STILL_RESOLUTION": (4056, 3040),
+    "CROP_RESOLUTION": (1775, 1160),
     
     # Other settings
     "STABILIZATION_DELAY": 1.0,
