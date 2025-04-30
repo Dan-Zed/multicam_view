@@ -137,7 +137,7 @@ class CameraManager:
                 controls={
                     "AfMode": controls.AfModeEnum.Continuous,  # Enable continuous autofocus
                     "AwbEnable": 0,                          # Disable auto white balance
-                    "ColourGains": (0, 0.85)           # Apply calibrated white balance gains
+                    "ColourGains": (1, 1)                  # Apply calibrated white balance gains
                 }
             )
             logger.info("Applied manual white balance: red_gain=0.9951, blue_gain=0.7410")
