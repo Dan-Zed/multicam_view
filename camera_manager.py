@@ -131,16 +131,25 @@ class CameraManager:
                 logger.info(f"Detected IMX519 sensors")
             
             # Create base configurations with appropriate resolutions
-            # Preview at 720p resolution with autofocus enabled
+            # Preview at 720p resolution with autofocus enabled and white balance adjustment
             self.video_config = self.picam.create_video_configuration(
                 main={"size": CONFIG["VIDEO_RESOLUTION"]},
-                controls={"AfMode": controls.AfModeEnum.Continuous}  # Enable continuous autofocus
+                controls={
+                    "AfMode": controls.AfModeEnum.Continuous,  # Enable continuous autofocus
+                    "AwbEnable": 0,                          # Disable auto white balance
+                    "ColourGains": (0.9951, 0.7410)           # Apply calibrated white balance gains
+                }
             )
+            logger.info("Applied manual white balance: red_gain=0.9951, blue_gain=0.7410")
             
-            # Capture at high resolution with autofocus
+            # Capture at high resolution with autofocus and white balance adjustment
             self.still_config = self.picam.create_still_configuration(
                 main={"size": CONFIG["STILL_RESOLUTION"]},
-                controls={"AfMode": controls.AfModeEnum.Auto}  # Enable one-time autofocus for captures
+                controls={
+                    "AfMode": controls.AfModeEnum.Auto,  # Enable one-time autofocus for captures
+                    "AwbEnable": 0,                     # Disable auto white balance
+                    "ColourGains": (0.9951, 0.7410)      # Apply calibrated white balance gains
+                }
             )
             
             # Start with video configuration and set to four-in-one mode
