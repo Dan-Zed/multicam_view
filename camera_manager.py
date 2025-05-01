@@ -139,16 +139,14 @@ class CameraManager:
                     "AwbEnable": 0,                          # Disable auto white balance
                     "ColourGains": (2, 1)                  # Apply calibrated white balance gains
                 }
-            )
-            logger.info("Applied manual white balance: red_gain=0.9951, blue_gain=0.7410")
-            
+            )            
             # Capture at high resolution with autofocus and white balance adjustment
             self.still_config = self.picam.create_still_configuration(
                 main={"size": CONFIG["STILL_RESOLUTION"]},
                 controls={
                     "AfMode": controls.AfModeEnum.Auto,  # Enable one-time autofocus for captures
                     "AwbEnable": 0,                     # Disable auto white balance
-                    "ColourGains": (0.9951, 0.7410)      # Apply calibrated white balance gains
+                    "ColourGains": (2, 1)       # Apply calibrated white balance gains
                 }
             )
             
